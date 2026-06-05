@@ -1,0 +1,73 @@
+{
+  "name": "@appium/mcp-documentation",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appium MCP documentation query tools and indexed documentation assets",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appium/appium-mcp-documentation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/appium/appium-mcp-documentation/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tools": {
+      "types": "./dist/tools.d.ts",
+      "import": "./dist/tools.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rimraf dist tsconfig.tsbuildinfo && tsc -b && npm run copy-assets",
+    "copy-assets": "mkdir -p dist/uploads dist/scripts && cp -f src/uploads/documents.json dist/uploads/documents.json 2>/dev/null || true && cp -f src/uploads/embeddings-*.json dist/uploads/ 2>/dev/null || true && cp -f src/scripts/rag-eval-dataset.json dist/scripts/rag-eval-dataset.json 2>/dev/null || true",
+    "index-docs": "node dist/scripts/simple-index-documentation.js",
+    "query-docs": "node dist/scripts/simple-query-documentation.js",
+    "eval-docs": "node dist/scripts/eval-documentation-rag.js",
+    "generate-cache": "node dist/scripts/generate-embeddings-cache.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "lint": "eslint src --ext .ts",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "setup-submodules": "./scripts/setup-submodules-sparse.sh",
+    "update-submodules": "./scripts/update-submodules.sh"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "appium",
+    "mcp",
+    "documentation",
+    "rag"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@appium/support": "^7.0.2",
+    "@langchain/core": "^1.1.17",
+    "@langchain/textsplitters": "^1.0.1",
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "@xenova/transformers": "^2.17.2",
+    "fastmcp": "^4.0.0",
+    "langchain": "^1.1.6",
+    "zod": "^4.3.6",
+    "@langchain/classic": "^1.0.10"
+  },
+  "devDependencies": {
+    "@appium/eslint-config-appium-ts": "^3.0.0",
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.9",
+    "jest": "^30.2.0",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
+    "typescript": "^6.0.2"
+  }
+}
