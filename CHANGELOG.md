@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/appium/appium-mcp-documentation/compare/v1.0.1...v1.0.2) (2026-06-07)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @types/node from 25.9.1 to 25.9.2 ([#2](https://github.com/appium/appium-mcp-documentation/issues/2)) ([20c1b37](https://github.com/appium/appium-mcp-documentation/commit/20c1b37178ebc8fe74729a5091eaec632d8b8b81))
+* **deps-dev:** bump fastmcp from 4.0.1 to 4.0.2 ([#3](https://github.com/appium/appium-mcp-documentation/issues/3)) ([93e6bb2](https://github.com/appium/appium-mcp-documentation/commit/93e6bb2ebb51938f5288cae9b65901b4fd9236b7))
+* update submodules to the latest ([#5](https://github.com/appium/appium-mcp-documentation/issues/5)) ([42553fa](https://github.com/appium/appium-mcp-documentation/commit/42553fab8421fcc391f62a6754c867bc74ef088c))
+
 ## [1.0.1](https://github.com/appium/appium-mcp-documentation/compare/v1.0.0...v1.0.1) (2026-06-07)
 
 ### Miscellaneous Chores
