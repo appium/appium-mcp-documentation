@@ -14,7 +14,3 @@
 
 * add missing deps ([7520d25](https://github.com/appium/appium-mcp-documentation/commit/7520d253bf555329a9a183b8d091b9ed9f118f84))
 * preparing releases ([#1](https://github.com/appium/appium-mcp-documentation/issues/1)) ([df4307b](https://github.com/appium/appium-mcp-documentation/commit/df4307be1f369becb92019be372b51d30e3bea67))
-
-## 1.0.0 (2026-06-06)
-
-* Initial release of Appium MCP documentation.
