@@ -53,10 +53,7 @@
     "@appium/support": "^7.0.2",
     "@langchain/core": "^1.1.17",
     "@langchain/textsplitters": "^1.0.1",
-    "@modelcontextprotocol/sdk": "^1.22.0",
     "@xenova/transformers": "^2.17.2",
-    "fastmcp": "^4.0.0",
-    "langchain": "^1.1.6",
     "zod": "^4.3.6",
     "@langchain/classic": "^1.0.10"
   },
@@ -65,6 +62,7 @@
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.9",
+    "fastmcp": "^4.0.0",
     "jest": "^30.2.0",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
