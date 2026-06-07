@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/appium/appium-mcp-documentation/compare/v1.0.0...v1.0.1) (2026-06-07)
+
+### Miscellaneous Chores
+
+* update changelog, and fix version mismatch ([3ebb7b2](https://github.com/appium/appium-mcp-documentation/commit/3ebb7b250086aa64291fa56d4c1afbdb3f6ef442))
+
 ## 1.0.0 (2026-06-07)
 
 ### Features
