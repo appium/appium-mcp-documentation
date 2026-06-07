@@ -48,7 +48,9 @@
     "scripts/zip-assets.mjs",
     "src/resources/submodules.zip",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
   ],
   "keywords": [
     "appium",
