@@ -1,4 +1,5 @@
 import { constants, existsSync, promises as fsPromises } from 'node:fs';
+import path from 'node:path';
 
 const noop = () => {};
 
@@ -13,6 +14,19 @@ export const logger = {
 };
 
 export const fs = {
+  findRoot: (dir: string) => {
+    let current = path.resolve(dir);
+    while (true) {
+      if (existsSync(path.join(current, 'package.json'))) {
+        return current;
+      }
+      const parent = path.dirname(current);
+      if (parent === current) {
+        throw new Error(`Could not find package root from ${dir}`);
+      }
+      current = parent;
+    }
+  },
   hasAccess: async (p: string) => {
     try {
       await fsPromises.access(p, constants.R_OK);
