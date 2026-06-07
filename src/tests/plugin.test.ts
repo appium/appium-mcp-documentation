@@ -23,6 +23,7 @@ describe('AppiumDocumentation plugin', () => {
     plugin.register(registry);
 
     expect(plugin.name).toBe('appium-documentation');
+    expect(plugin.version).toBeDefined();
     expect(tools).toEqual([appiumDocumentationQueryTool, appiumSkillsTool]);
   });
 });
