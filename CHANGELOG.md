@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/appium/appium-mcp-documentation/compare/v1.0.3...v1.0.4) (2026-06-14)
+
+### Miscellaneous Chores
+
+* drop the preinstall ([#11](https://github.com/appium/appium-mcp-documentation/issues/11)) ([e00cdf1](https://github.com/appium/appium-mcp-documentation/commit/e00cdf1c75bbda76ab8df97cb842515045f6c17a))
+
 ## [1.0.3](https://github.com/appium/appium-mcp-documentation/compare/v1.0.2...v1.0.3) (2026-06-13)
 
 ### Miscellaneous Chores
