@@ -57,11 +57,6 @@ interface ReasoningResult {
 export class ReasoningRAG {
   private transformers: any = null;
   private models: Map<string, any> = new Map();
-  private isInitialized: boolean = false;
-
-  constructor() {
-    void this.initializeTransformers();
-  }
 
   /**
    * Enhanced RAG query with reasoning capabilities
@@ -230,7 +225,6 @@ export class ReasoningRAG {
         'return import("@xenova/transformers")'
       );
       this.transformers = await importTransformers();
-      this.isInitialized = true;
       log.info('Xenova transformers initialized for reasoning');
     } catch (error) {
       log.error('Error importing @xenova/transformers:', error);
