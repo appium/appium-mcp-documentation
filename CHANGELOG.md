@@ -1,3 +1,14 @@
+## [1.0.5](https://github.com/appium/appium-mcp-documentation/compare/v1.0.4...v1.0.5) (2026-06-28)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @appium/eslint-config-appium-ts ([#14](https://github.com/appium/appium-mcp-documentation/issues/14)) ([ef9f87b](https://github.com/appium/appium-mcp-documentation/commit/ef9f87bdc3ea29973e9b0f36241133ab20593cd3))
+* **deps-dev:** bump @types/node from 25.9.3 to 26.0.1 ([#27](https://github.com/appium/appium-mcp-documentation/issues/27)) ([5765f78](https://github.com/appium/appium-mcp-documentation/commit/5765f7885ba91b30968de79d17e46fb198da93fd))
+* **deps-dev:** bump fastmcp from 4.1.0 to 4.3.2 ([#23](https://github.com/appium/appium-mcp-documentation/issues/23)) ([fac7dbc](https://github.com/appium/appium-mcp-documentation/commit/fac7dbc8c95e99972d5cd0f08dd5a5f23d827277))
+* **deps:** bump @appium/support from 7.2.3 to 7.2.5 ([#21](https://github.com/appium/appium-mcp-documentation/issues/21)) ([cda7eab](https://github.com/appium/appium-mcp-documentation/commit/cda7eab76a95a0fe5dfc8e8605255f1a05885c50))
+* **deps:** bump @langchain/classic from 1.0.34 to 1.0.38 ([#26](https://github.com/appium/appium-mcp-documentation/issues/26)) ([1d6cb43](https://github.com/appium/appium-mcp-documentation/commit/1d6cb43b66961b7fdbcbb4f7c3543c9004b5eb8d))
+* **deps:** bump @langchain/core from 1.1.48 to 1.2.1 ([#25](https://github.com/appium/appium-mcp-documentation/issues/25)) ([01daef9](https://github.com/appium/appium-mcp-documentation/commit/01daef9e8b13da72a21184f0aa76fd41d4506ee8))
+
 ## [1.0.4](https://github.com/appium/appium-mcp-documentation/compare/v1.0.3...v1.0.4) (2026-06-14)
 
 ### Miscellaneous Chores
