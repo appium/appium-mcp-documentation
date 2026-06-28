@@ -1,3 +1,9 @@
+## [1.0.6](https://github.com/appium/appium-mcp-documentation/compare/v1.0.5...v1.0.6) (2026-06-28)
+
+### Bug Fixes
+
+* path ([#29](https://github.com/appium/appium-mcp-documentation/issues/29)) ([d5063e7](https://github.com/appium/appium-mcp-documentation/commit/d5063e7efb476dc00a2cc7f1e5b3c30d53788a2d))
+
 ## [1.0.5](https://github.com/appium/appium-mcp-documentation/compare/v1.0.4...v1.0.5) (2026-06-28)
 
 ### Miscellaneous Chores
