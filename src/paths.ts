@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { fs } from '@appium/support';
 
@@ -12,5 +13,10 @@ export function getModuleRoot(): string {
 }
 
 export function resolveAppiumResourcesPath(...segments: string[]): string {
+  const packagedResourcesPath = path.join(__dirname, 'resources');
+  if (existsSync(packagedResourcesPath)) {
+    return path.join(packagedResourcesPath, ...segments);
+  }
+
   return path.join(getModuleRoot(), 'src', 'resources', ...segments);
 }
