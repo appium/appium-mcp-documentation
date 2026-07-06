@@ -14,10 +14,7 @@ import log from './logger.js';
  * Reasoning task types supported by the system
  */
 export type ReasoningTask =
-  | 'summarization'
-  | 'question-answering'
-  | 'analysis'
-  | 'classification';
+  'summarization' | 'question-answering' | 'analysis' | 'classification';
 
 /**
  * Enhanced RAG response with reasoning
