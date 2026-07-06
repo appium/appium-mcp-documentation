@@ -1,3 +1,9 @@
+## [1.0.8](https://github.com/appium/appium-mcp-documentation/compare/v1.0.7...v1.0.8) (2026-07-06)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump prettier from 3.8.4 to 3.9.4 ([#32](https://github.com/appium/appium-mcp-documentation/issues/32)) ([2d8a360](https://github.com/appium/appium-mcp-documentation/commit/2d8a360d2dd6f24ca7827e5fa1f0a8e196f5ca47))
+
 ## [1.0.7](https://github.com/appium/appium-mcp-documentation/compare/v1.0.6...v1.0.7) (2026-07-06)
 
 ### Miscellaneous Chores
