@@ -1,0 +1,6 @@
+version: 2
+issues:
+  newAuthorPackageAlert:
+    action: warn
+  newMaintainerPackageAlert:
+    action: warn
