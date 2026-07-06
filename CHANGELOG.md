@@ -1,3 +1,9 @@
+## [1.0.7](https://github.com/appium/appium-mcp-documentation/compare/v1.0.6...v1.0.7) (2026-07-06)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump fastmcp from 4.3.2 to 4.4.0 ([#34](https://github.com/appium/appium-mcp-documentation/issues/34)) ([f6d13e9](https://github.com/appium/appium-mcp-documentation/commit/f6d13e926bea5f730a4b1429e6a2b646910b198c))
+
 ## [1.0.6](https://github.com/appium/appium-mcp-documentation/compare/v1.0.5...v1.0.6) (2026-06-28)
 
 ### Bug Fixes
