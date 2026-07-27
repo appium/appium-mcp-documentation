@@ -11,12 +11,6 @@
     "moduleResolution": "NodeNext",
     "strict": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/resources/submodules"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/resources/submodules"]
 }

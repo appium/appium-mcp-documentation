@@ -1,18 +1,30 @@
 {
   "name": "@appium/mcp-documentation",
   "version": "1.0.8",
-  "type": "module",
   "description": "Appium MCP documentation query tools and indexed documentation assets",
+  "keywords": [
+    "appium",
+    "documentation",
+    "mcp",
+    "rag"
+  ],
+  "bugs": {
+    "url": "https://github.com/appium/appium-mcp-documentation/issues"
+  },
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/appium/appium-mcp-documentation.git"
   },
-  "bugs": {
-    "url": "https://github.com/appium/appium-mcp-documentation/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "files": [
+    "dist",
+    "scripts/zip-assets.mjs",
+    "src/resources/submodules",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -26,6 +38,9 @@
     },
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "rimraf dist tsconfig.tsbuildinfo && tsc -b && npm run copy-assets",
     "copy-assets": "mkdir -p dist/uploads dist/scripts && cp -f src/uploads/documents.json dist/uploads/documents.json 2>/dev/null || true && cp -f src/uploads/embeddings-*.json dist/uploads/ 2>/dev/null || true && cp -f src/scripts/rag-eval-dataset.json dist/scripts/rag-eval-dataset.json 2>/dev/null || true",
@@ -34,28 +49,13 @@
     "eval-docs": "node dist/scripts/eval-documentation-rag.js",
     "generate-cache": "node dist/scripts/generate-embeddings-cache.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "lint": "eslint src --ext .ts",
-    "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
-    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "lint": "oxlint -c oxlint.config.mjs .",
+    "lint:fix": "oxlint -c oxlint.config.mjs --fix .",
+    "format": "oxfmt -c oxfmt.config.mjs .",
+    "format:check": "oxfmt -c oxfmt.config.mjs --check .",
     "setup-submodules": "./scripts/setup-submodules-sparse.sh",
     "update-submodules": "./scripts/update-submodules.sh"
   },
-  "files": [
-    "dist",
-    "scripts/zip-assets.mjs",
-    "src/resources/submodules",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md",
-    "README.md"
-  ],
-  "keywords": [
-    "appium",
-    "mcp",
-    "documentation",
-    "rag"
-  ],
-  "license": "Apache-2.0",
   "dependencies": {
     "@appium/support": "^7.0.2",
     "@langchain/classic": "^1.0.10",
@@ -65,19 +65,15 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@appium/eslint-config-appium-ts": "^3.0.0",
+    "@appium/oxc-config": "^1.1.0",
+    "@appium/semantic-release-config": "^1.1.0",
     "@appium/tsconfig": "^1.0.0",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.0.1",
-    "conventional-changelog-conventionalcommits": "^9.1.0",
     "fastmcp": "^4.0.0",
     "jest": "^30.2.0",
-    "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
-    "semantic-release": "^25.0.3",
     "typescript": "^6.0.2"
   }
 }

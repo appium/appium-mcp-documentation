@@ -1,34 +1,16 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-import { zip as appiumZip } from '@appium/support';
+import {zip as appiumZip} from '@appium/support';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Adjust these paths for your use case
-const ZIP_SOURCE_DIR = path.join(
-  __dirname,
-  '..',
-  'src',
-  'resources',
-  'submodules'
-);
-const ZIP_OUTPUT_PATH = path.join(
-  __dirname,
-  '..',
-  'src',
-  'resources',
-  'submodules.zip'
-);
-const UNZIP_TARGET_DIR = path.join(
-  __dirname,
-  '..',
-  'src',
-  'resources',
-  'submodules'
-);
+const ZIP_SOURCE_DIR = path.join(__dirname, '..', 'src', 'resources', 'submodules');
+const ZIP_OUTPUT_PATH = path.join(__dirname, '..', 'src', 'resources', 'submodules.zip');
+const UNZIP_TARGET_DIR = path.join(__dirname, '..', 'src', 'resources', 'submodules');
 
 export async function zipAssets() {
   const zipBase64 = await appiumZip.toInMemoryZip(ZIP_SOURCE_DIR);
@@ -48,9 +30,7 @@ const fileExists = async (filePath) => {
 
 export async function unzipAssets() {
   if (!(await fileExists(ZIP_OUTPUT_PATH))) {
-    console.log(
-      `Target directory ${ZIP_OUTPUT_PATH} does not exist. Skipping unzip.`
-    );
+    console.log(`Target directory ${ZIP_OUTPUT_PATH} does not exist. Skipping unzip.`);
     return;
   }
   await appiumZip.extractAllTo(ZIP_OUTPUT_PATH, UNZIP_TARGET_DIR);

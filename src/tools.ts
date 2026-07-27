@@ -1,2 +1,2 @@
-export { appiumDocumentationQueryTool } from './answer-appium.js';
-export { appiumSkillsTool } from './appium-skills.js';
+export {appiumDocumentationQueryTool} from './answer-appium.js';
+export {appiumSkillsTool} from './appium-skills.js';

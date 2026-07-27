@@ -1,5 +1,5 @@
-import { appiumDocumentationQueryTool, appiumSkillsTool } from './tools.js';
-import pkg from '../package.json' with { type: 'json' };
+import pkg from '../package.json' with {type: 'json'};
+import {appiumDocumentationQueryTool, appiumSkillsTool} from './tools.js';
 
 type ToolDef = typeof appiumDocumentationQueryTool;
 

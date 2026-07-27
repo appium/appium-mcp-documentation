@@ -1,9 +1,6 @@
-import { describe, expect, test } from '@jest/globals';
-import {
-  AppiumDocumentation,
-  appiumDocumentationQueryTool,
-  appiumSkillsTool,
-} from '../index.js';
+import {describe, expect, test} from '@jest/globals';
+
+import {AppiumDocumentation, appiumDocumentationQueryTool, appiumSkillsTool} from '../index.js';
 
 type ToolDef = {
   name: string;

@@ -10,7 +10,7 @@
  * to ensure the published tarball ships a warm cache for the default model.
  */
 
-import { queryVectorStore } from '../simple-pdf-indexer.js';
+import {queryVectorStore} from '../simple-pdf-indexer.js';
 
 const start = Date.now();
 try {

@@ -1,10 +1,12 @@
-import { readFile } from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
 import path from 'node:path';
-import type { FastMCP } from 'fastmcp';
-import { z } from 'zod';
+
+import type {FastMCP} from 'fastmcp';
+import {z} from 'zod';
+
 import log from './logger.js';
-import { resolveAppiumResourcesPath } from './paths.js';
-import { textResult } from './tool-response.js';
+import {resolveAppiumResourcesPath} from './paths.js';
+import {textResult} from './tool-response.js';
 
 type Platform = 'android' | 'ios';
 type Driver = 'uiautomator2' | 'espresso' | 'xcuitest';
@@ -14,21 +16,12 @@ type ToolDef = Parameters<FastMCP['addTool']>[0];
 
 const ROOT = resolveAppiumResourcesPath('submodules', 'appium-skills');
 const AGENTS_PATH = path.join(ROOT, 'AGENTS.md');
-const SKILL_PATH = (name: string) =>
-  path.join(ROOT, 'skills', name, 'SKILL.md');
+const SKILL_PATH = (name: string) => path.join(ROOT, 'skills', name, 'SKILL.md');
 
 const SETUP_SKILLS: Record<Platform, Partial<Record<Driver, string[]>>> = {
   android: {
-    uiautomator2: [
-      'environment-setup-node',
-      'environment-setup-android',
-      'environment-setup-uiautomator2',
-    ],
-    espresso: [
-      'environment-setup-node',
-      'environment-setup-android',
-      'environment-setup-espresso',
-    ],
+    uiautomator2: ['environment-setup-node', 'environment-setup-android', 'environment-setup-uiautomator2'],
+    espresso: ['environment-setup-node', 'environment-setup-android', 'environment-setup-espresso'],
   },
   ios: {
     xcuitest: ['environment-setup-node', 'environment-setup-xcuitest'],
@@ -50,23 +43,17 @@ export const appiumSkillsTool: ToolDef = {
       Use this before preparing a LOCAL Appium environment or diagnosing local prerequisite issues.`,
   parameters: z.object({
     platform: z.enum(['android', 'ios']).describe('Target local platform.'),
-    driver: z
-      .enum(['uiautomator2', 'espresso', 'xcuitest'])
-      .describe('Target Appium automation driver.'),
+    driver: z.enum(['uiautomator2', 'espresso', 'xcuitest']).describe('Target Appium automation driver.'),
     mode: z
       .enum(['setup', 'troubleshoot'])
       .optional()
       .default('setup')
-      .describe(
-        'Whether to prepare an environment or troubleshoot an existing failure.'
-      ),
+      .describe('Whether to prepare an environment or troubleshoot an existing failure.'),
     realDevice: z
       .boolean()
       .optional()
       .default(false)
-      .describe(
-        'For ios + xcuitest only: true for a physical device, false for simulator setup.'
-      ),
+      .describe('For ios + xcuitest only: true for a physical device, false for simulator setup.'),
     includeOptional: z
       .array(z.enum(['ffmpeg', 'bundletool']))
       .optional()
@@ -90,26 +77,22 @@ export const appiumSkillsTool: ToolDef = {
       driver: parsed.driver as Driver,
       mode: parsed.mode ?? 'setup',
       realDevice: parsed.realDevice ?? false,
-      includeOptional: Array.isArray(parsed.includeOptional)
-        ? parsed.includeOptional
-        : [],
+      includeOptional: Array.isArray(parsed.includeOptional) ? parsed.includeOptional : [],
     };
-    const { skillNames, ignoredOptional } = getSkillNames(args);
+    const {skillNames, ignoredOptional} = getSkillNames(args);
 
-    log.info(
-      `Loading Appium skills for ${args.platform}/${args.driver} (${args.mode}) from ${ROOT}`
-    );
+    log.info(`Loading Appium skills for ${args.platform}/${args.driver} (${args.mode}) from ${ROOT}`);
 
     const agentsMarkdown = await readMarkdown(AGENTS_PATH);
     const promptTemplate = getPromptTemplate(
       agentsMarkdown,
-      getTemplateHeading(args.mode, args.driver, args.realDevice)
+      getTemplateHeading(args.mode, args.driver, args.realDevice),
     );
     const skillContents = await Promise.all(
       skillNames.map(async (skillName) => ({
         name: skillName,
         markdown: await readMarkdown(SKILL_PATH(skillName)),
-      }))
+      })),
     );
 
     const lines = [
@@ -126,9 +109,7 @@ export const appiumSkillsTool: ToolDef = {
     }
 
     lines.push('', 'Source files:', '- AGENTS.md');
-    lines.push(
-      ...skillNames.map((skillName) => `- skills/${skillName}/SKILL.md`)
-    );
+    lines.push(...skillNames.map((skillName) => `- skills/${skillName}/SKILL.md`));
 
     if (promptTemplate) {
       lines.push('', 'Prompt template:', '```text', promptTemplate, '```');
@@ -136,11 +117,7 @@ export const appiumSkillsTool: ToolDef = {
 
     lines.push('', '--- AGENTS.md ---', agentsMarkdown.trim());
     for (const skill of skillContents) {
-      lines.push(
-        '',
-        `--- skills/${skill.name}/SKILL.md ---`,
-        skill.markdown.trim()
-      );
+      lines.push('', `--- skills/${skill.name}/SKILL.md ---`, skill.markdown.trim());
     }
 
     return textResult(lines.join('\n'));
@@ -159,8 +136,8 @@ function getSkillNames(args: {
   mode: Mode;
   realDevice: boolean;
   includeOptional: OptionalSkill[];
-}): { skillNames: string[]; ignoredOptional: OptionalSkill[] } {
-  const { platform, driver, mode, realDevice, includeOptional } = args;
+}): {skillNames: string[]; ignoredOptional: OptionalSkill[]} {
+  const {platform, driver, mode, realDevice, includeOptional} = args;
 
   if (realDevice && platform !== 'ios') {
     throw new Error('realDevice=true is only supported for ios targets');
@@ -168,7 +145,7 @@ function getSkillNames(args: {
 
   if (mode === 'troubleshoot' && driver === 'espresso') {
     throw new Error(
-      'Troubleshooting guidance is currently scoped to uiautomator2 or xcuitest, matching the upstream appium/skills repository.'
+      'Troubleshooting guidance is currently scoped to uiautomator2 or xcuitest, matching the upstream appium/skills repository.',
     );
   }
 
@@ -177,7 +154,7 @@ function getSkillNames(args: {
     throw new Error(
       platform === 'android'
         ? 'xcuitest is only valid for iOS local environments'
-        : 'Only xcuitest is valid for iOS local environments'
+        : 'Only xcuitest is valid for iOS local environments',
     );
   }
 
@@ -202,25 +179,14 @@ function getSkillNames(args: {
     ignoredOptional.push(optional);
   }
 
-  return { skillNames, ignoredOptional };
+  return {skillNames, ignoredOptional};
 }
 
-function getTemplateHeading(
-  mode: Mode,
-  driver: Driver,
-  realDevice: boolean
-): string | null {
-  return (
-    TEMPLATE_HEADINGS[
-      `${mode}:${driver}${realDevice && mode === 'setup' ? ':real' : ''}`
-    ] ?? null
-  );
+function getTemplateHeading(mode: Mode, driver: Driver, realDevice: boolean): string | null {
+  return TEMPLATE_HEADINGS[`${mode}:${driver}${realDevice && mode === 'setup' ? ':real' : ''}`] ?? null;
 }
 
-function getPromptTemplate(
-  agentsMarkdown: string,
-  heading: string | null
-): string | null {
+function getPromptTemplate(agentsMarkdown: string, heading: string | null): string | null {
   if (!heading) {
     return null;
   }
@@ -238,7 +204,7 @@ async function readMarkdown(filePath: string): Promise<string> {
     return await readFile(filePath, 'utf8');
   } catch {
     throw new Error(
-      `Failed to load ${path.relative(ROOT, filePath)}. Ensure the appium-skills submodule is initialized.`
+      `Failed to load ${path.relative(ROOT, filePath)}. Ensure the appium-skills submodule is initialized.`,
     );
   }
 }

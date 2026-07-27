@@ -1,5 +1,6 @@
-import { describe, expect, test } from '@jest/globals';
-import { appiumSkillsTool } from '../appium-skills.js';
+import {describe, expect, test} from '@jest/globals';
+
+import {appiumSkillsTool} from '../appium-skills.js';
 
 async function runTool(args: any): Promise<string> {
   const result = await (appiumSkillsTool.execute as any)(args, {});
@@ -27,8 +28,8 @@ describe('appium_skills tool contract', () => {
           driver: 'espresso',
           mode: 'troubleshoot',
         },
-        {}
-      )
+        {},
+      ),
     ).rejects.toThrow('Troubleshooting guidance is currently scoped');
   });
 });

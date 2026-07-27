@@ -11,34 +11,22 @@
       "id": "q01",
       "query": "How do I install Appium?",
       "expectedSources": ["en/quickstart/install.md"],
-      "answerSpans": [
-        "Appium can be installed globally using `npm`",
-        "npm install -g appium"
-      ],
+      "answerSpans": ["Appium can be installed globally using `npm`", "npm install -g appium"],
       "difficulty": "easy",
       "category": "setup"
     },
     {
       "id": "q02",
       "query": "What capabilities does the XCUITest driver support?",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/reference/capabilities.md"
-      ],
-      "answerSpans": [
-        "platformName",
-        "appium:automationName",
-        "appium:deviceName",
-        "appium:platformVersion"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/reference/capabilities.md"],
+      "answerSpans": ["platformName", "appium:automationName", "appium:deviceName", "appium:platformVersion"],
       "difficulty": "easy",
       "category": "capabilities"
     },
     {
       "id": "q03",
       "query": "how to run iOS tests in parallel",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/guides/parallel-tests.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/guides/parallel-tests.md"],
       "answerSpans": [
         "It is possible to execute tests in parallel using XCUITest driver",
         "wdaLocalPort` must be a unique port number for each parallel session",
@@ -50,14 +38,8 @@
     {
       "id": "q04",
       "query": "push and pull files from an iOS device",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/guides/file-transfer.md"
-      ],
-      "answerSpans": [
-        "mobile: pullFile",
-        "mobile: pushFile",
-        "mobile: pullFolder"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/guides/file-transfer.md"],
+      "answerSpans": ["mobile: pullFile", "mobile: pushFile", "mobile: pullFolder"],
       "difficulty": "easy",
       "category": "ios"
     },
@@ -77,24 +59,15 @@
     {
       "id": "q06",
       "query": "what locator strategies are supported by XCUITest",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/reference/locator-strategies.md"
-      ],
-      "answerSpans": [
-        "-ios predicate string",
-        "-ios class chain",
-        "accessibility id",
-        "className"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/reference/locator-strategies.md"],
+      "answerSpans": ["-ios predicate string", "-ios class chain", "accessibility id", "className"],
       "difficulty": "easy",
       "category": "locators"
     },
     {
       "id": "q07",
       "query": "how do I use iOS predicate strings to find elements",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/reference/ios-predicate.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/reference/ios-predicate.md"],
       "answerSpans": [
         "iOSNsPredicateString",
         "BEGINSWITH",
@@ -123,25 +96,15 @@
     {
       "id": "q09",
       "query": "Appium server command line arguments",
-      "expectedSources": [
-        "en/reference/cli/server.md",
-        "en/reference/cli/index.md"
-      ],
-      "answerSpans": [
-        "--address",
-        "--allow-cors",
-        "--allow-insecure",
-        "--base-path"
-      ],
+      "expectedSources": ["en/reference/cli/server.md", "en/reference/cli/index.md"],
+      "answerSpans": ["--address", "--allow-cors", "--allow-insecure", "--base-path"],
       "difficulty": "easy",
       "category": "cli"
     },
     {
       "id": "q10",
       "query": "install a root certificate on an iOS device",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/guides/install-certificate.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/guides/install-certificate.md"],
       "answerSpans": ["mobile: installCertificate", "over-the-air"],
       "difficulty": "easy",
       "category": "ios"
@@ -149,28 +112,15 @@
     {
       "id": "q11",
       "query": "I'm new to Appium, where should I start?",
-      "expectedSources": [
-        "en/quickstart/index.md",
-        "en/intro/index.md",
-        "en/quickstart/requirements.md"
-      ],
-      "answerSpans": [
-        "Quickstart Intro",
-        "install Appium",
-        "install a driver",
-        "first test"
-      ],
+      "expectedSources": ["en/quickstart/index.md", "en/intro/index.md", "en/quickstart/requirements.md"],
+      "answerSpans": ["Quickstart Intro", "install Appium", "install a driver", "first test"],
       "difficulty": "medium",
       "category": "intro"
     },
     {
       "id": "q12",
       "query": "which driver should I use to automate android",
-      "expectedSources": [
-        "en/quickstart/uiauto2-driver.md",
-        "en/intro/drivers.md",
-        "en/ecosystem/drivers.md"
-      ],
+      "expectedSources": ["en/quickstart/uiauto2-driver.md", "en/intro/drivers.md", "en/ecosystem/drivers.md"],
       "answerSpans": ["UiAutomator2", "appium driver install uiautomator2"],
       "difficulty": "medium",
       "category": "android"
@@ -178,10 +128,7 @@
     {
       "id": "q13",
       "query": "how do I switch to a webview in an iOS hybrid app",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/guides/hybrid.md",
-        "en/guides/context.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/guides/hybrid.md", "en/guides/context.md"],
       "answerSpans": [
         "WEBVIEW_",
         "NATIVE_APP",
@@ -199,20 +146,14 @@
         "appium-xcuitest-driver/docs/preparation/prov-profile-basic-auto.md",
         "appium-xcuitest-driver/docs/preparation/prov-profile-basic-manual.md"
       ],
-      "answerSpans": [
-        "WDA application must have a valid provisioning profile",
-        "Apple ID",
-        "WebDriverAgent.xcodeproj"
-      ],
+      "answerSpans": ["WDA application must have a valid provisioning profile", "Apple ID", "WebDriverAgent.xcodeproj"],
       "difficulty": "medium",
       "category": "ios-real-device"
     },
     {
       "id": "q15",
       "query": "swipe gesture on android",
-      "expectedSources": [
-        "appium-uiautomator2-driver/docs/android-mobile-gestures.md"
-      ],
+      "expectedSources": ["appium-uiautomator2-driver/docs/android-mobile-gestures.md"],
       "answerSpans": ["mobile: swipeGesture", "direction", "percent"],
       "difficulty": "medium",
       "category": "gestures"
@@ -220,9 +161,7 @@
     {
       "id": "q16",
       "query": "running tests against an .aab Android App Bundle",
-      "expectedSources": [
-        "appium-uiautomator2-driver/docs/android-appbundle.md"
-      ],
+      "expectedSources": ["appium-uiautomator2-driver/docs/android-appbundle.md"],
       "answerSpans": ["bundletool", ".apks", ".aab"],
       "difficulty": "medium",
       "category": "android"
@@ -231,11 +170,7 @@
       "id": "q17",
       "query": "differences between Appium 1 and Appium 2",
       "expectedSources": ["en/guides/migrating-1-to-2.md"],
-      "answerSpans": [
-        "Drivers Installed Separately",
-        "ecosystem",
-        "uninstall Appium 1 first"
-      ],
+      "answerSpans": ["Drivers Installed Separately", "ecosystem", "uninstall Appium 1 first"],
       "difficulty": "medium",
       "category": "migration"
     },
@@ -243,11 +178,7 @@
       "id": "q18",
       "query": "enable Touch ID in an iOS simulator test",
       "expectedSources": ["appium-xcuitest-driver/docs/guides/touch-id.md"],
-      "answerSpans": [
-        "appium:allowTouchIdEnroll",
-        "mobile: enrollBiometric",
-        "only supported on simulators"
-      ],
+      "answerSpans": ["appium:allowTouchIdEnroll", "mobile: enrollBiometric", "only supported on simulators"],
       "difficulty": "medium",
       "category": "ios"
     },
@@ -279,12 +210,7 @@
         "appium-xcuitest-driver/docs/guides/wda-slowness.md",
         "appium-xcuitest-driver/docs/guides/troubleshooting.md"
       ],
-      "answerSpans": [
-        "WebDriverAgent",
-        "XCTest",
-        "Proxying [",
-        "snapshotMaxDepth"
-      ],
+      "answerSpans": ["WebDriverAgent", "XCTest", "Proxying [", "snapshotMaxDepth"],
       "difficulty": "vague",
       "category": "troubleshooting"
     },
@@ -302,9 +228,7 @@
     {
       "id": "q23",
       "query": "I switched xcode versions and now nothing works",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/guides/multiple-xcode-versions.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/guides/multiple-xcode-versions.md"],
       "answerSpans": ["xcode-select", "DEVELOPER_DIR"],
       "difficulty": "vague",
       "category": "troubleshooting"
@@ -312,9 +236,7 @@
     {
       "id": "q24",
       "query": "can I reuse a WebDriverAgent that's already running",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/guides/attach-to-running-wda.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/guides/attach-to-running-wda.md"],
       "answerSpans": ["appium:webDriverAgentUrl", "attach to a running"],
       "difficulty": "vague",
       "category": "wda"
@@ -323,19 +245,14 @@
       "id": "q25",
       "query": "show me how to write a test in python",
       "expectedSources": ["en/quickstart/test-py.md"],
-      "answerSpans": [
-        "Appium-Python-Client",
-        "pip install Appium-Python-Client"
-      ],
+      "answerSpans": ["Appium-Python-Client", "pip install Appium-Python-Client"],
       "difficulty": "vague",
       "category": "clients"
     },
     {
       "id": "q26",
       "query": "long press an element on Android",
-      "expectedSources": [
-        "appium-uiautomator2-driver/docs/android-mobile-gestures.md"
-      ],
+      "expectedSources": ["appium-uiautomator2-driver/docs/android-mobile-gestures.md"],
       "answerSpans": ["mobile: longClickGesture", "long click action"],
       "difficulty": "easy",
       "category": "gestures"
@@ -343,10 +260,7 @@
     {
       "id": "q27",
       "query": "how do I list available drivers on my machine",
-      "expectedSources": [
-        "en/reference/cli/extensions.md",
-        "en/guides/managing-exts.md"
-      ],
+      "expectedSources": ["en/reference/cli/extensions.md", "en/guides/managing-exts.md"],
       "answerSpans": ["appium driver list", "driver install"],
       "difficulty": "medium",
       "category": "cli"
@@ -354,10 +268,7 @@
     {
       "id": "q28",
       "query": "what's the difference between appium:app and appium:bundleId",
-      "expectedSources": [
-        "appium-xcuitest-driver/docs/reference/capabilities.md",
-        "en/guides/caps.md"
-      ],
+      "expectedSources": ["appium-xcuitest-driver/docs/reference/capabilities.md", "en/guides/caps.md"],
       "answerSpans": ["bundleId", "appium:app"],
       "difficulty": "medium",
       "category": "capabilities"
@@ -377,10 +288,7 @@
         "appium-xcuitest-driver/docs/reference/execute-methods.md",
         "appium-xcuitest-driver/docs/guides/audio-capture.md"
       ],
-      "answerSpans": [
-        "mobile: startRecordingScreen",
-        "mobile: stopRecordingScreen"
-      ],
+      "answerSpans": ["mobile: startRecordingScreen", "mobile: stopRecordingScreen"],
       "difficulty": "medium",
       "category": "ios"
     },
@@ -432,10 +340,7 @@
     {
       "id": "q35",
       "query": "Appium 2 plugin installation",
-      "expectedSources": [
-        "en/guides/managing-exts.md",
-        "en/reference/cli/extensions.md"
-      ],
+      "expectedSources": ["en/guides/managing-exts.md", "en/reference/cli/extensions.md"],
       "answerSpans": ["appium plugin install", "plugin"],
       "difficulty": "easy",
       "category": "plugins"
@@ -481,10 +386,7 @@
     {
       "id": "q40",
       "query": "Appium driver doctor command",
-      "expectedSources": [
-        "en/reference/cli/extensions.md",
-        "en/quickstart/uiauto2-driver.md"
-      ],
+      "expectedSources": ["en/reference/cli/extensions.md", "en/quickstart/uiauto2-driver.md"],
       "answerSpans": ["appium driver doctor", "required fixes"],
       "difficulty": "easy",
       "category": "cli"
@@ -492,10 +394,7 @@
     {
       "id": "q41",
       "query": "how to install Appium server arguments documentation",
-      "expectedSources": [
-        "en/reference/cli/server.md",
-        "en/reference/cli/index.md"
-      ],
+      "expectedSources": ["en/reference/cli/server.md", "en/reference/cli/index.md"],
       "answerSpans": ["appium server", "--port"],
       "difficulty": "medium",
       "category": "cli"
@@ -503,11 +402,7 @@
     {
       "id": "q42",
       "query": "what is an Appium plugin",
-      "expectedSources": [
-        "en/intro/index.md",
-        "en/ecosystem/plugins.md",
-        "en/guides/managing-exts.md"
-      ],
+      "expectedSources": ["en/intro/index.md", "en/ecosystem/plugins.md", "en/guides/managing-exts.md"],
       "answerSpans": ["plugin", "extend"],
       "difficulty": "easy",
       "category": "plugins"

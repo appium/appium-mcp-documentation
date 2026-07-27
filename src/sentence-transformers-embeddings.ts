@@ -17,7 +17,7 @@ export class SentenceTransformersEmbeddings {
   private isInitialized: boolean = false;
   private transformers: any = null;
 
-  constructor(options: { modelName?: string; queryInstruction?: string } = {}) {
+  constructor(options: {modelName?: string; queryInstruction?: string} = {}) {
     this.modelName = options.modelName || 'Xenova/all-MiniLM-L6-v2';
     // Optional prefix prepended only to queries (not documents).
     // BGE models use this to close the question/passage style gap.
@@ -41,9 +41,7 @@ export class SentenceTransformersEmbeddings {
     }
 
     try {
-      const input = this.queryInstruction
-        ? `${this.queryInstruction}${text}`
-        : text;
+      const input = this.queryInstruction ? `${this.queryInstruction}${text}` : text;
       const result = await this.model(input, {
         pooling: 'mean',
         normalize: true,
@@ -54,10 +52,9 @@ export class SentenceTransformersEmbeddings {
       return embeddings;
     } catch (error) {
       log.error('Error generating embeddings:', error);
-      throw new Error(
-        `Failed to generate embeddings: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
-      );
+      throw new Error(`Failed to generate embeddings: ${error instanceof Error ? error.message : String(error)}`, {
+        cause: error,
+      });
     }
   }
 
@@ -80,10 +77,7 @@ export class SentenceTransformersEmbeddings {
           normalize: true,
         });
         embeddings.push(Array.from(result.data) as number[]);
-        if (
-          texts.length > logEvery &&
-          (i + 1 === texts.length || (i + 1) % logEvery === 0)
-        ) {
+        if (texts.length > logEvery && (i + 1 === texts.length || (i + 1) % logEvery === 0)) {
           log.info(`Processed ${i + 1}/${texts.length} documents`);
         }
       }
@@ -93,7 +87,7 @@ export class SentenceTransformersEmbeddings {
       log.error('Error generating document embeddings:', error);
       throw new Error(
         `Failed to generate document embeddings: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
+        {cause: error},
       );
     }
   }
@@ -108,15 +102,13 @@ export class SentenceTransformersEmbeddings {
 
     try {
       // Use eval to avoid CommonJS/ESM conflict during compilation
-      const importTransformers = new Function(
-        'return import("@xenova/transformers")'
-      );
+      const importTransformers = new Function('return import("@xenova/transformers")');
       this.transformers = await importTransformers();
     } catch (error) {
       log.error('Error importing @xenova/transformers:', error);
       throw new Error(
         `Failed to import @xenova/transformers: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
+        {cause: error},
       );
     }
   }
@@ -133,19 +125,14 @@ export class SentenceTransformersEmbeddings {
 
     log.info(`Initializing sentence-transformers model: ${this.modelName}`);
     try {
-      this.model = await this.transformers.pipeline(
-        'feature-extraction',
-        this.modelName
-      );
+      this.model = await this.transformers.pipeline('feature-extraction', this.modelName);
       this.isInitialized = true;
-      log.info(
-        `Successfully initialized sentence-transformers model: ${this.modelName}`
-      );
+      log.info(`Successfully initialized sentence-transformers model: ${this.modelName}`);
     } catch (error) {
       log.error('Error initializing sentence-transformers model:', error);
       throw new Error(
         `Failed to initialize sentence-transformers model: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
+        {cause: error},
       );
     }
   }

@@ -18,9 +18,10 @@
  * If a directory path is provided, it will index all Markdown files in that directory.
  */
 
-import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { indexMarkdown, indexAllMarkdownFiles } from '../simple-pdf-indexer.js';
+import * as path from 'node:path';
+
+import {indexMarkdown, indexAllMarkdownFiles} from '../simple-pdf-indexer.js';
 
 /**
  * Main function to handle the documentation indexing process
@@ -60,9 +61,7 @@ async function main(): Promise<void> {
 
   console.log('Using sentence-transformers embeddings (no API key required)');
 
-  console.log(
-    'Starting simplified documentation indexing process with in-memory vector store...'
-  );
+  console.log('Starting simplified documentation indexing process with in-memory vector store...');
 
   try {
     if (indexSingleFile) {
@@ -71,14 +70,8 @@ async function main(): Promise<void> {
       console.log('Documentation indexing completed successfully');
     } else {
       console.log(`Indexing all Markdown files in directory: ${markdownPath}`);
-      const indexedFiles = await indexAllMarkdownFiles(
-        markdownPath,
-        chunkSize,
-        chunkOverlap
-      );
-      console.log(
-        `Documentation indexing completed successfully for ${indexedFiles.length} Markdown files`
-      );
+      const indexedFiles = await indexAllMarkdownFiles(markdownPath, chunkSize, chunkOverlap);
+      console.log(`Documentation indexing completed successfully for ${indexedFiles.length} Markdown files`);
     }
     process.exit(0);
   } catch (error: any) {

@@ -10,16 +10,14 @@
  * Example: npm run simple-query-docs "What is Appium?"
  */
 
-import { answerAppiumQuery } from '../index.js';
+import {answerAppiumQuery} from '../index.js';
 
 /**
  * Main function to handle the documentation query process
  */
 async function main(): Promise<void> {
   console.log('Using sentence-transformers embeddings (no API key required)');
-  console.log(
-    'Note: This script will return relevant documentation chunks without generating responses'
-  );
+  console.log('Note: This script will return relevant documentation chunks without generating responses');
 
   console.log('process.argv:', process.argv);
   const args = process.argv.slice(2);
