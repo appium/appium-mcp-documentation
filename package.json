@@ -1,6 +1,6 @@
 {
   "name": "@appium/mcp-documentation",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Appium MCP documentation query tools and indexed documentation assets",
   "keywords": [
     "appium",

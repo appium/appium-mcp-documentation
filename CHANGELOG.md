@@ -1,3 +1,9 @@
+## [1.0.9](https://github.com/appium/appium-mcp-documentation/compare/v1.0.8...v1.0.9) (2026-07-27)
+
+### Miscellaneous Chores
+
+* migrate lint/format to appium's ones ([#54](https://github.com/appium/appium-mcp-documentation/issues/54)) ([247d1f5](https://github.com/appium/appium-mcp-documentation/commit/247d1f59ee5065370afa5ca2bb468ffdb74dc71e))
+
 ## [1.0.8](https://github.com/appium/appium-mcp-documentation/compare/v1.0.7...v1.0.8) (2026-07-06)
 
 ### Miscellaneous Chores
