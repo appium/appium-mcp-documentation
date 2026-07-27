@@ -19,8 +19,8 @@
  * Files with no headers (or only an h1) fall through to a single recursive
  * split of the whole body - no different from plain RCT for those.
  */
-import { Document } from '@langchain/core/documents';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import {Document} from '@langchain/core/documents';
+import {RecursiveCharacterTextSplitter} from '@langchain/textsplitters';
 
 export interface MarkdownHeaderSplitterOptions {
   chunkSize: number;
@@ -41,9 +41,9 @@ const FENCE_RE = /^\s{0,3}(```|~~~)/;
  */
 export async function splitMarkdownByHeaders(
   markdown: string,
-  options: MarkdownHeaderSplitterOptions
+  options: MarkdownHeaderSplitterOptions,
 ): Promise<Document[]> {
-  const { chunkSize, chunkOverlap } = options;
+  const {chunkSize, chunkOverlap} = options;
   const sections = parseSections(markdown);
 
   // Fallback splitter for sections that exceed chunkSize on their own.
@@ -72,7 +72,7 @@ export async function splitMarkdownByHeaders(
           headerPath: breadcrumbFor(buffer[0].headerStack),
           sectionCount: buffer.length,
         },
-      })
+      }),
     );
     buffer.length = 0;
     bufferSize = 0;
@@ -98,7 +98,7 @@ export async function splitMarkdownByHeaders(
               sectionCount: 1,
               recursiveSplit: true,
             },
-          })
+          }),
         );
       }
       continue;

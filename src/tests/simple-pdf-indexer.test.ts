@@ -1,8 +1,10 @@
-import { describe, expect, test, afterEach } from '@jest/globals';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { getMarkdownFilesInDirectory } from '../simple-pdf-indexer.js';
+
+import {describe, expect, test, afterEach} from '@jest/globals';
+
+import {getMarkdownFilesInDirectory} from '../simple-pdf-indexer.js';
 
 const tempDirs: string[] = [];
 
@@ -10,7 +12,7 @@ afterEach(() => {
   while (tempDirs.length > 0) {
     const dir = tempDirs.pop();
     if (dir) {
-      fs.rmSync(dir, { recursive: true, force: true });
+      fs.rmSync(dir, {recursive: true, force: true});
     }
   }
 });
@@ -28,17 +30,15 @@ describe('getMarkdownFilesInDirectory', () => {
     const skillsDir = path.join(root, 'appium-skills');
     const nestedSkillsDir = path.join(skillsDir, 'skills', 'android');
 
-    fs.mkdirSync(docsDir, { recursive: true });
-    fs.mkdirSync(nestedSkillsDir, { recursive: true });
+    fs.mkdirSync(docsDir, {recursive: true});
+    fs.mkdirSync(nestedSkillsDir, {recursive: true});
     fs.writeFileSync(path.join(root, 'README.md'), '# Root');
     fs.writeFileSync(path.join(docsDir, 'guide.md'), '# Guide');
     fs.writeFileSync(path.join(docsDir, 'ignore.txt'), 'ignore');
     fs.writeFileSync(path.join(nestedSkillsDir, 'SKILL.md'), '# Skill');
 
     const markdownFiles = await getMarkdownFilesInDirectory(root);
-    const relativeFiles = markdownFiles.map((file) =>
-      path.relative(root, file)
-    );
+    const relativeFiles = markdownFiles.map((file) => path.relative(root, file));
 
     expect(relativeFiles.sort()).toEqual(['README.md', 'docs/guide.md']);
   });

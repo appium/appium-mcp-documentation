@@ -49,9 +49,9 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {fileURLToPath} from 'node:url';
 
-import { queryVectorStore } from '../simple-pdf-indexer.js';
+import {queryVectorStore} from '../simple-pdf-indexer.js';
 
 interface EvalQuery {
   id: string;
@@ -66,7 +66,7 @@ interface EvalDataset {
   version: number;
   description: string;
   matchMode: string;
-  spanMatch?: { normalize: string; anyOf: boolean };
+  spanMatch?: {normalize: string; anyOf: boolean};
   queries: EvalQuery[];
 }
 
@@ -164,14 +164,12 @@ function resolveDatasetPath(): string {
       return p;
     }
   }
-  throw new Error(
-    `rag-eval-dataset.json not found in: ${candidates.join(', ')}`
-  );
+  throw new Error(`rag-eval-dataset.json not found in: ${candidates.join(', ')}`);
 }
 
 function resolveResultsDir(): string {
   const dir = path.resolve(__dirname, '../../src/scripts/eval-results');
-  fs.mkdirSync(dir, { recursive: true });
+  fs.mkdirSync(dir, {recursive: true});
   return dir;
 }
 
@@ -193,7 +191,7 @@ function endsWithExpected(retrievedRelPath: string, expected: string): boolean {
 
 function evaluateQuery(
   q: EvalQuery,
-  chunks: RetrievedChunk[]
+  chunks: RetrievedChunk[],
 ): {
   hitRanks: number[];
   firstHitRank: number | null;
@@ -253,9 +251,7 @@ function aggregate(results: PerQueryResult[]): AggregateMetrics {
     hitAnyAt5: mean(results.map((r) => r.hitAnyAt5)),
     hitAnyAt10: mean(results.map((r) => r.hitAnyAt10)),
     mrr: mean(results.map((r) => r.reciprocalRank)),
-    contextEfficiency: hitResults.length
-      ? mean(hitResults.map((r) => r.contextEfficiency))
-      : 0,
+    contextEfficiency: hitResults.length ? mean(hitResults.map((r) => r.contextEfficiency)) : 0,
     fileRecallAt5: mean(results.map((r) => r.fileRecallAt5)),
     fileRecallAt10: mean(results.map((r) => r.fileRecallAt10)),
   };
@@ -268,7 +264,7 @@ function fmt(n: number, dp: number = 3): string {
 function printAggregate(label: string, m: AggregateMetrics): void {
   const tag = `${label} (n=${m.count})`.padEnd(20);
   console.log(
-    `${tag}  spanRecall=${fmt(m.answerSpanRecall)}  hit@1=${fmt(m.hitAnyAt1)}  hit@3=${fmt(m.hitAnyAt3)}  hit@5=${fmt(m.hitAnyAt5)}  hit@10=${fmt(m.hitAnyAt10)}  MRR=${fmt(m.mrr)}  ctxEff=${fmt(m.contextEfficiency, 2)}  fileR@5=${fmt(m.fileRecallAt5)}`
+    `${tag}  spanRecall=${fmt(m.answerSpanRecall)}  hit@1=${fmt(m.hitAnyAt1)}  hit@3=${fmt(m.hitAnyAt3)}  hit@5=${fmt(m.hitAnyAt5)}  hit@10=${fmt(m.hitAnyAt10)}  MRR=${fmt(m.mrr)}  ctxEff=${fmt(m.contextEfficiency, 2)}  fileR@5=${fmt(m.fileRecallAt5)}`,
   );
 }
 
@@ -279,14 +275,11 @@ function printPerQueryTable(results: PerQueryResult[]): void {
   console.log(header);
   console.log(sep);
   for (const r of results) {
-    const fhr =
-      r.firstHitRank === null ? ' - ' : String(r.firstHitRank).padStart(3, ' ');
+    const fhr = r.firstHitRank === null ? ' - ' : String(r.firstHitRank).padStart(3, ' ');
     const spans = `${r.spansCovered.length}/${r.answerSpans.length}`;
-    const matched = r.retrievedSources[0]
-      ? r.retrievedSources.slice(0, 2).join(', ')
-      : '(empty)';
+    const matched = r.retrievedSources[0] ? r.retrievedSources.slice(0, 2).join(', ') : '(empty)';
     console.log(
-      `${r.id.padEnd(4)} | ${r.difficulty.padEnd(6)} | ${fhr} | ${spans.padEnd(6)} | ${String(r.hitAnyAt5).padEnd(5)} | ${String(r.uniqueFiles).padEnd(6)} | ${matched}`
+      `${r.id.padEnd(4)} | ${r.difficulty.padEnd(6)} | ${fhr} | ${spans.padEnd(6)} | ${String(r.hitAnyAt5).padEnd(5)} | ${String(r.uniqueFiles).padEnd(6)} | ${matched}`,
     );
   }
   console.log(sep);
@@ -296,15 +289,11 @@ function printPerQueryTable(results: PerQueryResult[]): void {
 
 async function runEval(): Promise<void> {
   const datasetPath = resolveDatasetPath();
-  const dataset: EvalDataset = JSON.parse(
-    fs.readFileSync(datasetPath, 'utf-8')
-  );
+  const dataset: EvalDataset = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
 
   console.log(`\n=== Appium RAG eval (answer-grounded) ===`);
   console.log(`Dataset: ${datasetPath}`);
-  console.log(
-    `Queries: ${dataset.queries.length}   topK: ${TOP_K}   label: ${LABEL}\n`
-  );
+  console.log(`Queries: ${dataset.queries.length}   topK: ${TOP_K}   label: ${LABEL}\n`);
 
   const perQuery: PerQueryResult[] = [];
 
@@ -313,41 +302,25 @@ async function runEval(): Promise<void> {
     const chunks: RetrievedChunk[] = docs.map((d, i) => ({
       rank: i + 1,
       text: d.pageContent,
-      source:
-        (d.metadata?.relativePath as string | undefined) ??
-        (d.metadata?.filename as string | undefined),
+      source: (d.metadata?.relativePath as string | undefined) ?? (d.metadata?.filename as string | undefined),
       charCount: d.pageContent.length,
     }));
 
-    const retrievedSources = chunks
-      .map((c) => c.source)
-      .filter((s): s is string => !!s);
+    const retrievedSources = chunks.map((c) => c.source).filter((s): s is string => !!s);
 
     const topKChars = chunks.reduce((a, c) => a + c.charCount, 0);
     const uniqueFiles = new Set(retrievedSources).size;
 
-    const { hitRanks, firstHitRank, spansCovered, spansMissing } =
-      evaluateQuery(q, chunks);
+    const {hitRanks, firstHitRank, spansCovered, spansMissing} = evaluateQuery(q, chunks);
 
-    const answerSpanRecall =
-      q.answerSpans.length === 0
-        ? 0
-        : spansCovered.length / q.answerSpans.length;
-    const hitAnyAt = (k: number): 0 | 1 =>
-      hitRanks.some((r) => r <= k) ? 1 : 0;
+    const answerSpanRecall = q.answerSpans.length === 0 ? 0 : spansCovered.length / q.answerSpans.length;
+    const hitAnyAt = (k: number): 0 | 1 => (hitRanks.some((r) => r <= k) ? 1 : 0);
     const reciprocalRank = firstHitRank ? 1 / firstHitRank : 0;
-    const contextEfficiency =
-      firstHitRank !== null && topKChars > 0
-        ? (1000 * spansCovered.length) / topKChars
-        : 0;
+    const contextEfficiency = firstHitRank !== null && topKChars > 0 ? (1000 * spansCovered.length) / topKChars : 0;
 
     const fileMatched = (k: number): 0 | 1 => {
       const top = retrievedSources.slice(0, k);
-      return top.some((rs) =>
-        q.expectedSources.some((es) => endsWithExpected(rs, es))
-      )
-        ? 1
-        : 0;
+      return top.some((rs) => q.expectedSources.some((es) => endsWithExpected(rs, es))) ? 1 : 0;
     };
 
     perQuery.push({
@@ -379,7 +352,7 @@ async function runEval(): Promise<void> {
     if (!QUIET) {
       const status = hitAnyAt(5) ? 'OK' : 'MISS';
       console.log(
-        `${status.padEnd(4)} ${q.id}  spans=${spansCovered.length}/${q.answerSpans.length}  fhr=${firstHitRank ?? '-'}`
+        `${status.padEnd(4)} ${q.id}  spans=${spansCovered.length}/${q.answerSpans.length}  fhr=${firstHitRank ?? '-'}`,
       );
     }
   }

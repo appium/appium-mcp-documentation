@@ -6,15 +6,15 @@
  * It can perform summarization, question-answering, and analysis on retrieved chunks.
  */
 
-import type { Document } from '@langchain/core/documents';
-import { queryVectorStore } from './simple-pdf-indexer.js';
+import type {Document} from '@langchain/core/documents';
+
 import log from './logger.js';
+import {queryVectorStore} from './simple-pdf-indexer.js';
 
 /**
  * Reasoning task types supported by the system
  */
-export type ReasoningTask =
-  'summarization' | 'question-answering' | 'analysis' | 'classification';
+export type ReasoningTask = 'summarization' | 'question-answering' | 'analysis' | 'classification';
 
 /**
  * Enhanced RAG response with reasoning
@@ -69,13 +69,9 @@ export class ReasoningRAG {
       topK?: number;
       reasoningTasks?: ReasoningTask[];
       customConfigs?: ReasoningConfig[];
-    } = {}
+    } = {},
   ): Promise<EnhancedRAGResponse> {
-    const {
-      topK = 50,
-      reasoningTasks = ['summarization', 'question-answering'],
-      customConfigs,
-    } = options;
+    const {topK = 50, reasoningTasks = ['summarization', 'question-answering'], customConfigs} = options;
 
     try {
       log.info(`Starting reasoning-enhanced RAG query: "${query}"`);
@@ -114,56 +110,33 @@ export class ReasoningRAG {
       ];
 
       // Filter configs based on requested tasks
-      const filteredConfigs = configs.filter((config) =>
-        reasoningTasks.includes(config.task)
-      );
+      const filteredConfigs = configs.filter((config) => reasoningTasks.includes(config.task));
 
       // Step 3: Perform reasoning on retrieved chunks
-      log.info(
-        `Performing reasoning with ${filteredConfigs.length} different models...`
-      );
-      const reasoningResults = await this.processChunksWithReasoning(
-        retrievedChunks,
-        filteredConfigs,
-        query
-      );
+      log.info(`Performing reasoning with ${filteredConfigs.length} different models...`);
+      const reasoningResults = await this.processChunksWithReasoning(retrievedChunks, filteredConfigs, query);
 
       // Step 4: Generate comprehensive summary
       log.info('Generating comprehensive summary...');
-      const summary = await this.generateComprehensiveSummary(
-        reasoningResults,
-        query
-      );
+      const summary = await this.generateComprehensiveSummary(reasoningResults, query);
 
       // Step 5: Extract best answer from reasoning results
       const qaResults = reasoningResults.filter(
-        (result) =>
-          result.metadata.task === 'question-answering' &&
-          !result.metadata.error
+        (result) => result.metadata.task === 'question-answering' && !result.metadata.error,
       );
 
       const bestAnswer =
         qaResults.length > 0
-          ? qaResults.sort(
-              (a, b) => (b.confidence || 0) - (a.confidence || 0)
-            )[0].reasoningOutput
+          ? qaResults.sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0].reasoningOutput
           : summary;
 
       // Step 6: Extract sources
       const sources = retrievedChunks
-        .map(
-          (doc: any) =>
-            doc.metadata?.relativePath ||
-            doc.metadata?.filename ||
-            doc.metadata?.source
-        )
-        .filter(
-          (source: any, index: number, arr: any[]) =>
-            source && arr.indexOf(source) === index
-        );
+        .map((doc: any) => doc.metadata?.relativePath || doc.metadata?.filename || doc.metadata?.source)
+        .filter((source: any, index: number, arr: any[]) => source && arr.indexOf(source) === index);
 
       log.info(
-        `Reasoning-enhanced RAG completed. Generated ${reasoningResults.length} reasoning results from ${sources.length} sources`
+        `Reasoning-enhanced RAG completed. Generated ${reasoningResults.length} reasoning results from ${sources.length} sources`,
       );
 
       return {
@@ -176,10 +149,9 @@ export class ReasoningRAG {
       };
     } catch (error) {
       log.error('Error in reasoning-enhanced RAG:', error);
-      throw new Error(
-        `Reasoning-enhanced RAG failed: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
-      );
+      throw new Error(`Reasoning-enhanced RAG failed: ${error instanceof Error ? error.message : String(error)}`, {
+        cause: error,
+      });
     }
   }
 
@@ -188,20 +160,10 @@ export class ReasoningRAG {
    */
   getAvailableModels(): Record<ReasoningTask, string[]> {
     return {
-      summarization: [
-        'Xenova/t5-small',
-        'Xenova/t5-base',
-        'Xenova/bart-large-cnn',
-      ],
-      'question-answering': [
-        'Xenova/distilbert-base-cased-distilled-squad',
-        'Xenova/roberta-base-squad2',
-      ],
+      summarization: ['Xenova/t5-small', 'Xenova/t5-base', 'Xenova/bart-large-cnn'],
+      'question-answering': ['Xenova/distilbert-base-cased-distilled-squad', 'Xenova/roberta-base-squad2'],
       analysis: ['Xenova/gpt2', 'Xenova/distilgpt2'],
-      classification: [
-        'Xenova/distilbert-base-uncased-finetuned-sst-2-english',
-        'Xenova/bert-base-uncased',
-      ],
+      classification: ['Xenova/distilbert-base-uncased-finetuned-sst-2-english', 'Xenova/bert-base-uncased'],
     };
   }
 
@@ -223,9 +185,7 @@ export class ReasoningRAG {
 
     try {
       // Use eval to avoid CommonJS/ESM conflict during compilation
-      const importTransformers = new Function(
-        'return import("@xenova/transformers")'
-      );
+      const importTransformers = new Function('return import("@xenova/transformers")');
       this.transformers = await importTransformers();
       this.isInitialized = true;
       log.info('Xenova transformers initialized for reasoning');
@@ -233,7 +193,7 @@ export class ReasoningRAG {
       log.error('Error importing @xenova/transformers:', error);
       throw new Error(
         `Failed to import @xenova/transformers: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
+        {cause: error},
       );
     }
   }
@@ -253,30 +213,22 @@ export class ReasoningRAG {
     log.info(`Loading model for ${config.task}: ${config.modelName}`);
 
     try {
-      const model = await this.transformers.pipeline(
-        config.task,
-        config.modelName
-      );
+      const model = await this.transformers.pipeline(config.task, config.modelName);
       this.models.set(modelKey, model);
       log.info(`Successfully loaded model: ${config.modelName}`);
       return model;
     } catch (error) {
       log.error(`Error loading model ${config.modelName}:`, error);
-      throw new Error(
-        `Failed to load model: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error }
-      );
+      throw new Error(`Failed to load model: ${error instanceof Error ? error.message : String(error)}`, {
+        cause: error,
+      });
     }
   }
 
   /**
    * Perform reasoning on a text chunk
    */
-  private async performReasoning(
-    text: string,
-    config: ReasoningConfig,
-    query?: string
-  ): Promise<ReasoningResult> {
+  private async performReasoning(text: string, config: ReasoningConfig, query?: string): Promise<ReasoningResult> {
     const model = await this.getModel(config);
 
     try {
@@ -314,11 +266,9 @@ export class ReasoningRAG {
               max_length: config.maxLength || 200,
               temperature: 0.7,
               do_sample: true,
-            }
+            },
           );
-          reasoningOutput =
-            analysisResult[0].generated_text.split('Analysis:')[1]?.trim() ||
-            'No analysis generated';
+          reasoningOutput = analysisResult[0].generated_text.split('Analysis:')[1]?.trim() || 'No analysis generated';
           break;
 
         case 'classification':
@@ -363,7 +313,7 @@ export class ReasoningRAG {
   private async processChunksWithReasoning(
     chunks: Document[],
     configs: ReasoningConfig[],
-    query?: string
+    query?: string,
   ): Promise<ReasoningResult[]> {
     const results: ReasoningResult[] = [];
 
@@ -373,9 +323,7 @@ export class ReasoningRAG {
       const batch = chunks.slice(i, i + batchSize);
 
       const batchPromises = batch.flatMap((chunk) =>
-        configs.map((config) =>
-          this.performReasoning(chunk.pageContent, config, query)
-        )
+        configs.map((config) => this.performReasoning(chunk.pageContent, config, query)),
       );
 
       const batchResults = await Promise.all(batchPromises);
@@ -383,9 +331,7 @@ export class ReasoningRAG {
 
       // Log progress for large batches
       if (chunks.length > batchSize) {
-        log.info(
-          `Processed reasoning for ${Math.min(i + batchSize, chunks.length)}/${chunks.length} chunks`
-        );
+        log.info(`Processed reasoning for ${Math.min(i + batchSize, chunks.length)}/${chunks.length} chunks`);
       }
     }
 
@@ -395,10 +341,7 @@ export class ReasoningRAG {
   /**
    * Generate a comprehensive summary from reasoning results
    */
-  private async generateComprehensiveSummary(
-    reasoningResults: ReasoningResult[],
-    query: string
-  ): Promise<string> {
+  private async generateComprehensiveSummary(reasoningResults: ReasoningResult[], query: string): Promise<string> {
     // Extract all reasoning outputs
     const summaries = reasoningResults
       .filter((result) => result.metadata.task === 'summarization')

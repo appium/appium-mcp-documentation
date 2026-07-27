@@ -1,7 +1,8 @@
+import {existsSync} from 'node:fs';
 import path from 'node:path';
-import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { fs } from '@appium/support';
+import {fileURLToPath} from 'node:url';
+
+import {fs} from '@appium/support';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

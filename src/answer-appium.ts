@@ -1,11 +1,12 @@
 /**
  * Tool to query indexed Appium documentation.
  */
-import type { FastMCP } from 'fastmcp';
-import { z } from 'zod';
-import { answerAppiumQuery, initializeAppiumDocumentation } from './index.js';
+import type {FastMCP} from 'fastmcp';
+import {z} from 'zod';
+
+import {answerAppiumQuery, initializeAppiumDocumentation} from './index.js';
 import log from './logger.js';
-import { errorResult, textResult } from './tool-response.js';
+import {errorResult, textResult} from './tool-response.js';
 
 type ToolDef = Parameters<FastMCP['addTool']>[0];
 
@@ -15,9 +16,7 @@ export const appiumDocumentationQueryTool: ToolDef = {
       This tool searches through indexed Appium documentation to answer questions about Appium features, setup, configuration, drivers, and usage.
       `,
   parameters: z.object({
-    query: z
-      .string()
-      .describe('The question or query about Appium documentation'),
+    query: z.string().describe('The question or query about Appium documentation'),
   }),
   execute: async (args: any, _context: any): Promise<any> => {
     const query = args.query;
@@ -26,20 +25,20 @@ export const appiumDocumentationQueryTool: ToolDef = {
     }
 
     try {
-      const result = await answerAppiumQuery({ query });
+      const result = await answerAppiumQuery({query});
       return textResult(result.answer);
     } catch (_docError) {
       // If documentation query fails, try to initialize and retry once
       try {
         log.info('Documentation not initialized, initializing now...');
         await initializeAppiumDocumentation();
-        const result = await answerAppiumQuery({ query });
+        const result = await answerAppiumQuery({query});
         return textResult(result.answer);
       } catch (retryError) {
         return errorResult(
           `Error querying Appium documentation: ${
             (retryError as Error).message
-          }. Please ensure the documentation is indexed first.`
+          }. Please ensure the documentation is indexed first.`,
         );
       }
     }
