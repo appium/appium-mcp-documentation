@@ -1,4 +1,5 @@
-import {describe, expect, test} from '@jest/globals';
+import assert from 'node:assert/strict';
+import {describe, test} from 'node:test';
 
 import {AppiumDocumentation, appiumDocumentationQueryTool, appiumSkillsTool} from '../index.js';
 
@@ -7,8 +8,8 @@ type ToolDef = {
   annotations?: unknown;
 };
 
-describe('AppiumDocumentation plugin', () => {
-  test('registers documentation tools', () => {
+void describe('AppiumDocumentation plugin', () => {
+  void test('registers documentation tools', () => {
     const tools: ToolDef[] = [];
     const registry = {
       addTool(toolDef: ToolDef) {
@@ -19,8 +20,8 @@ describe('AppiumDocumentation plugin', () => {
     const plugin = new AppiumDocumentation();
     plugin.register(registry);
 
-    expect(plugin.name).toBe('appium-documentation');
-    expect(plugin.version).toBeDefined();
-    expect(tools).toEqual([appiumDocumentationQueryTool, appiumSkillsTool]);
+    assert.equal(plugin.name, 'appium-documentation');
+    assert.ok(plugin.version);
+    assert.deepEqual(tools, [appiumDocumentationQueryTool, appiumSkillsTool]);
   });
 });

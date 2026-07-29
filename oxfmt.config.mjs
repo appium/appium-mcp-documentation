@@ -2,5 +2,5 @@ import appiumConfig, {defineConfig, ignorePatterns} from '@appium/oxc-config/oxf
 
 export default defineConfig({
   ...appiumConfig,
-  ignorePatterns: [...ignorePatterns, 'dist/', 'node_modules/', 'src/resources/submodules'],
+  ignorePatterns: [...ignorePatterns, 'dist/', 'src/resources/submodules'],
 });

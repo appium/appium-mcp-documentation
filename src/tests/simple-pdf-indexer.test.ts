@@ -1,8 +1,8 @@
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-
-import {describe, expect, test, afterEach} from '@jest/globals';
+import {afterEach, describe, test} from 'node:test';
 
 import {getMarkdownFilesInDirectory} from '../simple-pdf-indexer.js';
 
@@ -23,8 +23,8 @@ function makeTempDir(): string {
   return dir;
 }
 
-describe('getMarkdownFilesInDirectory', () => {
-  test('returns markdown files and excludes appium-skills content', async () => {
+void describe('getMarkdownFilesInDirectory', () => {
+  void test('returns markdown files and excludes appium-skills content', async () => {
     const root = makeTempDir();
     const docsDir = path.join(root, 'docs');
     const skillsDir = path.join(root, 'appium-skills');
@@ -40,6 +40,6 @@ describe('getMarkdownFilesInDirectory', () => {
     const markdownFiles = await getMarkdownFilesInDirectory(root);
     const relativeFiles = markdownFiles.map((file) => path.relative(root, file));
 
-    expect(relativeFiles.sort()).toEqual(['README.md', 'docs/guide.md']);
+    assert.deepEqual(relativeFiles.sort(), ['README.md', 'docs/guide.md']);
   });
 });
