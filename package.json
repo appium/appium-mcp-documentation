@@ -48,7 +48,7 @@
     "query-docs": "node dist/scripts/simple-query-documentation.js",
     "eval-docs": "node dist/scripts/eval-documentation-rag.js",
     "generate-cache": "node dist/scripts/generate-embeddings-cache.js",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "npm run build && node --test --enable-source-maps dist/tests/*.test.js",
     "lint": "oxlint -c oxlint.config.mjs .",
     "lint:fix": "oxlint -c oxlint.config.mjs --fix .",
     "format": "oxfmt -c oxfmt.config.mjs .",
@@ -67,13 +67,9 @@
   "devDependencies": {
     "@appium/oxc-config": "^1.1.0",
     "@appium/semantic-release-config": "^1.1.0",
-    "@appium/tsconfig": "^1.0.0",
-    "@jest/globals": "^30.2.0",
-    "@types/jest": "^30.0.0",
+    "@appium/tsconfig": "^1.2.0",
     "@types/node": "^26.0.1",
     "fastmcp": "^4.0.0",
-    "jest": "^30.2.0",
-    "rimraf": "^6.0.1",
-    "typescript": "^6.0.2"
+    "rimraf": "^6.0.1"
   }
 }
