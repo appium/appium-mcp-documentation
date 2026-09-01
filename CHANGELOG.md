@@ -1,3 +1,9 @@
+## [1.0.13](https://github.com/appium/appium-mcp-documentation/compare/v1.0.12...v1.0.13) (2026-09-01)
+
+### Miscellaneous Chores
+
+* bump minimum support version ([#89](https://github.com/appium/appium-mcp-documentation/issues/89)) ([3c37a9c](https://github.com/appium/appium-mcp-documentation/commit/3c37a9cd16a96c782e9b4468c76b1feed42d4ce4))
+
 ## [1.0.12](https://github.com/appium/appium-mcp-documentation/compare/v1.0.11...v1.0.12) (2026-09-01)
 
 ### Miscellaneous Chores
