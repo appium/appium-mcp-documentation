@@ -1,3 +1,9 @@
+## [1.0.12](https://github.com/appium/appium-mcp-documentation/compare/v1.0.11...v1.0.12) (2026-09-01)
+
+### Miscellaneous Chores
+
+* **deps:** bump @appium/support from 7.2.5 to 7.2.7 ([#84](https://github.com/appium/appium-mcp-documentation/issues/84)) ([5032293](https://github.com/appium/appium-mcp-documentation/commit/5032293dcd42aabe4cbfb204d796d911acd5048c))
+
 ## [1.0.11](https://github.com/appium/appium-mcp-documentation/compare/v1.0.10...v1.0.11) (2026-07-29)
 
 ### Miscellaneous Chores
