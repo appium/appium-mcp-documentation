@@ -1,3 +1,12 @@
+## [1.0.14](https://github.com/appium/appium-mcp-documentation/compare/v1.0.13...v1.0.14) (2026-09-10)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @appium/oxc-config from 1.1.0 to 1.1.1 ([#81](https://github.com/appium/appium-mcp-documentation/issues/81)) ([0b4621c](https://github.com/appium/appium-mcp-documentation/commit/0b4621c2d1c51970beac2550f4155e9a0f265cca))
+* **deps-dev:** bump @types/node from 26.0.1 to 26.4.1 ([#95](https://github.com/appium/appium-mcp-documentation/issues/95)) ([4db78c4](https://github.com/appium/appium-mcp-documentation/commit/4db78c41ed7cce407ded762c4a289d14cb9010ee))
+* **deps:** bump @langchain/classic from 1.0.40 to 1.0.46 ([#93](https://github.com/appium/appium-mcp-documentation/issues/93)) ([d7c8a7a](https://github.com/appium/appium-mcp-documentation/commit/d7c8a7a9c4ab288c4bdc66bcd855a38698c99f06))
+* **deps:** bump @langchain/core from 1.2.3 to 1.2.9 ([#78](https://github.com/appium/appium-mcp-documentation/issues/78)) ([d4ff3b9](https://github.com/appium/appium-mcp-documentation/commit/d4ff3b9f99fd0ff23862fc47211bfaccf32362ba))
+
 ## [1.0.13](https://github.com/appium/appium-mcp-documentation/compare/v1.0.12...v1.0.13) (2026-09-01)
 
 ### Miscellaneous Chores
