@@ -124,3 +124,28 @@ npm run query-docs -- "How do I start an Appium session?"
 The runtime dependencies are the packages used by the shipped tools and RAG
 implementation. `fastmcp` is a development dependency here because this package
 only imports its types.
+
+## Evaluation
+
+`npm test` checks deterministic implementation correctness (indexing, chunking,
+tools, and schemas). `npm run eval-docs` evaluates retrieval quality against the
+golden dataset using the production retriever, without an LLM/API credential.
+
+```bash
+npm run build
+npm run eval-docs
+npm run eval-docs -- --strict # nonzero exit on source/evidence failures
+```
+
+The first eval may download the local embedding model and build its cache. JSON
+reports go to `src/scripts/eval-results/`; the default command reports quality
+misses without failing the process. See [the evaluation design](evals/DESIGN.md)
+for metrics, dataset maintenance, CI prerequisites, and future query-generation,
+answer, and real-client evaluation layers.
+
+CI runs implementation tests and retrieval evaluation on PRs to `main`, including
+Dependabot updates. Retrieval runs against both the packaged index and an index
+rebuilt from the PR's documentation submodule commits. Results and failures appear
+in the job summary and downloadable artifacts. Execution/indexing errors fail CI;
+retrieval quality misses are currently observational. See the
+[CI design](evals/DESIGN.md#dependency-update-ci-coverage) for details.

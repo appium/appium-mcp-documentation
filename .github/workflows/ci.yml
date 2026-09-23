@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   node_matrix:
@@ -59,3 +60,119 @@ jobs:
 
       - name: Run Unit Tests
         run: npm test
+
+  retrieval-evaluation:
+    name: Retrieval evaluation (${{ matrix.corpus }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        corpus: [packaged, reindexed]
+    env:
+      SENTENCE_TRANSFORMERS_MODEL: Xenova/bge-small-en-v1.5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Test the commits in this PR, never floating upstream documentation.
+          submodules: recursive
+
+      - name: Setup submodules sparse-checkout
+        run: bash scripts/setup-submodules-sparse.sh
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: SocketDev/action@v1
+        with:
+          mode: firewall-free
+
+      - name: Install dependencies
+        run: sfw npm ci
+
+      - name: Cache local embedding model weights
+        uses: actions/cache@v6
+        with:
+          path: node_modules/@xenova/transformers/.cache
+          key: ${{ runner.os }}-${{ runner.arch }}-docs-model-bge-small-en-v1.5-${{ hashFiles('package-lock.json') }}
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare reports and record environment
+        run: |
+          mkdir -p src/scripts/eval-results
+          {
+            git rev-parse HEAD
+            git submodule status
+            node --version
+            npm --version
+            sha256sum package-lock.json
+          } > src/scripts/eval-results/environment.txt
+          # Recompute document vectors so dependency changes exercise embeddings.
+          # Only model weights are cached, never corpus or document embeddings.
+          rm -f dist/uploads/embeddings-*.json
+
+      - name: Rebuild index from checked-out documentation
+        if: matrix.corpus == 'reindexed'
+        run: |
+          node --input-type=module <<'JS' 2>&1 | tee src/scripts/eval-results/index.log
+          import {getMarkdownFilesInDirectory, indexAllMarkdownFiles} from './dist/simple-pdf-indexer.js';
+          const root = 'src/resources/submodules';
+          for (const name of ['appium', 'appium-uiautomator2-driver', 'appium-xcuitest-driver']) {
+            if (!(await getMarkdownFilesInDirectory(`${root}/${name}`)).length) {
+              throw new Error(`Missing documentation in ${name}`);
+            }
+          }
+          const expected = await getMarkdownFilesInDirectory(root);
+          const indexed = await indexAllMarkdownFiles(root);
+          // The production bulk indexer logs individual failures and continues.
+          // CI must reject partial indexing instead of evaluating a partial corpus.
+          if (indexed.length !== expected.length) {
+            throw new Error(`Incomplete index: ${indexed.length}/${expected.length} files`);
+          }
+          JS
+
+      - name: Evaluate retrieval (quality observations, execution errors fail)
+        run: npm run eval-docs -- --label=${{ matrix.corpus }} 2>&1 | tee src/scripts/eval-results/eval.log
+
+      - name: Summarize retrieval quality
+        if: always()
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const reportPath = 'src/scripts/eval-results/latest.json';
+          if (!fs.existsSync(reportPath)) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, 'Retrieval evaluation did not produce a report. Inspect job logs/artifacts.\n');
+          } else {
+            const r = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            const m = r.overall;
+            const lines = [
+              `### Retrieval quality: ${r.label}`,
+              'Quality misses are observational; execution errors fail this job.',
+              `Cases: ${m.count}; failed checks: ${m.failedCases}`,
+              `Source hit rate: ${m.sourceHitRate.toFixed(3)}; evidence hit@10: ${m.hitAnyAt10.toFixed(3)}; MRR: ${m.mrr.toFixed(3)}`,
+              `Dataset SHA-256: ${r.datasetSha256}`,
+              `Corpus SHA-256: ${r.corpusSha256}`,
+              `Failed cases: ${r.perQuery.filter(q => q.failures.length).map(q => q.id).join(', ') || 'none'}`,
+              'Download the artifact for per-case failures, timings, and environment details.',
+            ];
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n\n') + '\n');
+          }
+          JS
+
+      - name: Upload evaluation reports and logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: retrieval-evaluation-${{ matrix.corpus }}
+          path: src/scripts/eval-results/
+          retention-days: 14
+          if-no-files-found: warn
