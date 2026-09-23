@@ -1,3 +1,15 @@
+## [1.0.15](https://github.com/appium/appium-mcp-documentation/compare/v1.0.14...v1.0.15) (2026-09-23)
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @appium/semantic-release-config ([#83](https://github.com/appium/appium-mcp-documentation/issues/83)) ([5e66760](https://github.com/appium/appium-mcp-documentation/commit/5e66760394244f2005372812ba05c1e5a8029d83))
+* **deps-dev:** bump @appium/tsconfig from 1.2.0 to 1.2.1 ([#82](https://github.com/appium/appium-mcp-documentation/issues/82)) ([365d91b](https://github.com/appium/appium-mcp-documentation/commit/365d91b3e305202c5ccf140e38db92bb03cc1d40))
+* **deps-dev:** bump @types/node from 26.4.1 to 26.6.2 ([#113](https://github.com/appium/appium-mcp-documentation/issues/113)) ([f7e3bc5](https://github.com/appium/appium-mcp-documentation/commit/f7e3bc5d0cd8eacd376edee9679388c24b64232a))
+* **deps-dev:** bump fastmcp from 4.12.0 to 4.20.14 ([#111](https://github.com/appium/appium-mcp-documentation/issues/111)) ([28a67e8](https://github.com/appium/appium-mcp-documentation/commit/28a67e8ea8199d2ad997d01d6ba44c5901c13e97))
+* **deps:** bump @langchain/classic from 1.0.46 to 1.0.48 ([#106](https://github.com/appium/appium-mcp-documentation/issues/106)) ([0e9b08a](https://github.com/appium/appium-mcp-documentation/commit/0e9b08a3b08e253a9e2254e29bc3d3b56b2b997e))
+* **deps:** bump @langchain/core from 1.2.9 to 1.2.11 ([#107](https://github.com/appium/appium-mcp-documentation/issues/107)) ([cc702e0](https://github.com/appium/appium-mcp-documentation/commit/cc702e010d868aee60dfd249756318f2d972a88a))
+* **deps:** bump zod from 4.4.3 to 4.6.5 ([#109](https://github.com/appium/appium-mcp-documentation/issues/109)) ([d02befc](https://github.com/appium/appium-mcp-documentation/commit/d02befc7bbae2ba367f92d968f63e25a492f5a71))
+
 ## [1.0.14](https://github.com/appium/appium-mcp-documentation/compare/v1.0.13...v1.0.14) (2026-09-10)
 
 ### Miscellaneous Chores
