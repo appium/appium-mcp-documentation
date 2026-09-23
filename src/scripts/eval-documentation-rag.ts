@@ -1,50 +1,9 @@
 /**
- * Answer-grounded RAG eval for the Appium documentation tool.
- *
- * Runs the documentation_query retrieval pipeline against a fixed set of
- * realistic queries and asks the only question that matters downstream:
- * "did the answer text actually land in the chunks an LLM would see?"
- *
- * What we measure:
- *
- *   1. answerSpanRecall@K
- *      For each query, the dataset declares short verbatim phrases lifted
- *      from the docs (`answerSpans`). We concatenate the top-K retrieved
- *      chunks and check what fraction of the spans appears in that text.
- *      "anyOf" semantics: a query that finds at least one span counts as a
- *      hit. Spans are 30-140 chars and chosen so any reasonable chunk
- *      containing the answer will include them, regardless of chunk
- *      boundaries -- so the metric is splitter-neutral.
- *
- *   2. hit@{1,3,5,10}
- *      Did any chunk at rank <= K carry any answerSpan? Direct measure of
- *      "does the LLM see the answer" at different context budgets.
- *
- *   3. MRR
- *      Mean reciprocal rank of the *first* chunk that carries an answerSpan.
- *      MRR-equivalent on content, not on file paths -- a chunk from the
- *      right file but wrong section is worth nothing here.
- *
- *   4. contextEfficiency
- *      For queries we hit, 1000 * spansCovered / totalChars(topK). Spans-per-
- *      kchar density. Low = lots of noise around the answer.
- *
- *   5. fileRecall@{5,10} (diagnostic only)
- *      Did the right *file* appear in top-K? Kept so we can spot the
- *      "right-file wrong-chunk" failure mode (right file present but no
- *      answerSpan landed).
- *
- * Match semantics: lowercase + collapse whitespace, then substring check.
- *
- * Usage (after `npm run build`):
- *   node dist/scripts/eval-documentation-rag.js \
- *        [--top-k=10] [--label=NAME] [--quiet] [--no-save]
- *
- *   --top-k=N    number of chunks to retrieve & evaluate (default 10)
- *   --label=N    label written into the saved run, useful for comparing
- *                index variants (e.g. --label=before, --label=after)
- *   --quiet      suppress the per-query log lines and table
- *   --no-save    don't persist results JSON to disk
+ * Level 2 retrieval evaluation; see evals/DESIGN.md for metric definitions.
+ * Uses the production retriever, never query generation or answer synthesis.
+ * Usage: npm run eval-docs -- [--top-k=10] [--label=NAME] [--quiet] [--no-save] [--strict]
+ * --strict exits nonzero on source, evidence-span, or required-fact failures.
+ * Default mode preserves the existing observational baseline behavior.
  */
 
 import * as fs from 'node:fs';
@@ -52,32 +11,20 @@ import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {queryVectorStore} from '../simple-pdf-indexer.js';
+import {
+  checkEvidence,
+  chunkContainsSpan,
+  endsWithExpected,
+  evalDatasetSchema,
+  type EvalQuery,
+  type RetrievedChunk,
+} from './rag-eval-checks.js';
 
-interface EvalQuery {
-  id: string;
-  query: string;
-  expectedSources: string[];
-  answerSpans: string[];
-  difficulty: 'easy' | 'medium' | 'vague';
-  category?: string;
-}
-
-interface EvalDataset {
-  version: number;
-  description: string;
-  matchMode: string;
-  spanMatch?: {normalize: string; anyOf: boolean};
-  queries: EvalQuery[];
-}
-
-interface RetrievedChunk {
-  rank: number;
-  text: string;
-  source: string | undefined;
-  charCount: number;
-}
-
-interface PerQueryResult {
+interface PerQueryResult extends ReturnType<typeof checkEvidence> {
+  question: string;
+  requiredFacts: string[];
+  latencyMs: number;
+  payloadBytes: number;
   id: string;
   query: string;
   difficulty: EvalQuery['difficulty'];
@@ -96,32 +43,36 @@ interface PerQueryResult {
   spansCovered: string[];
   spansMissing: string[];
 
-  // Aggregates: per definitions in module docstring.
+  // Aggregates: per definitions in evals/DESIGN.md.
   answerSpanRecall: number;
-  hitAnyAt1: 0 | 1;
-  hitAnyAt3: 0 | 1;
-  hitAnyAt5: 0 | 1;
-  hitAnyAt10: 0 | 1;
+  hitAnyAt1: number | null;
+  hitAnyAt3: number | null;
+  hitAnyAt5: number | null;
+  hitAnyAt10: number | null;
   reciprocalRank: number;
   contextEfficiency: number; // spans/kchar; only meaningful when hitAny=1
 
   // Diagnostic: right-file recall (independent of whether the answer span
   // actually landed). Useful for spotting "right file, wrong section" cases.
-  fileRecallAt5: 0 | 1;
-  fileRecallAt10: 0 | 1;
+  fileRecallAt5: number | null;
+  fileRecallAt10: number | null;
 }
 
 interface AggregateMetrics {
+  sourceHitRate: number;
+  averageLatencyMs: number;
+  averagePayloadBytes: number;
+  failedCases: number;
   count: number;
   answerSpanRecall: number;
-  hitAnyAt1: number;
-  hitAnyAt3: number;
-  hitAnyAt5: number;
-  hitAnyAt10: number;
+  hitAnyAt1: number | null;
+  hitAnyAt3: number | null;
+  hitAnyAt5: number | null;
+  hitAnyAt10: number | null;
   mrr: number;
   contextEfficiency: number; // averaged over queries with a hit
-  fileRecallAt5: number;
-  fileRecallAt10: number;
+  fileRecallAt5: number | null;
+  fileRecallAt10: number | null;
 }
 
 interface EvalRun {
@@ -129,6 +80,7 @@ interface EvalRun {
   label: string;
   datasetVersion: number;
   topK: number;
+  embeddingModel: string;
   overall: AggregateMetrics;
   byDifficulty: Record<string, AggregateMetrics>;
   perQuery: PerQueryResult[];
@@ -173,20 +125,6 @@ function resolveResultsDir(): string {
   return dir;
 }
 
-// -- matching helpers -----------------------------------------------------
-
-function normalize(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, ' ').trim();
-}
-
-function chunkContainsSpan(chunkText: string, span: string): boolean {
-  return normalize(chunkText).includes(normalize(span));
-}
-
-function endsWithExpected(retrievedRelPath: string, expected: string): boolean {
-  return retrievedRelPath === expected || retrievedRelPath.endsWith(expected);
-}
-
 // -- per-query evaluation -------------------------------------------------
 
 function evaluateQuery(
@@ -228,6 +166,10 @@ function evaluateQuery(
 function aggregate(results: PerQueryResult[]): AggregateMetrics {
   if (results.length === 0) {
     return {
+      sourceHitRate: 0,
+      averageLatencyMs: 0,
+      averagePayloadBytes: 0,
+      failedCases: 0,
       count: 0,
       answerSpanRecall: 0,
       hitAnyAt1: 0,
@@ -242,27 +184,36 @@ function aggregate(results: PerQueryResult[]): AggregateMetrics {
   }
   const n = results.length;
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  const hitResults = results.filter((r) => r.hitAnyAt10 === 1);
+  const spanResults = results.filter((r) => r.answerSpans.length);
+  const spanMean = (values: number[]) => (values.length ? mean(values) : 0);
+  const hitResults = results.filter((r) => r.firstHitRank !== null);
   return {
+    sourceHitRate: mean(results.map((r) => r.sourceHit)),
+    averageLatencyMs: mean(results.map((r) => r.latencyMs)),
+    averagePayloadBytes: mean(results.map((r) => r.payloadBytes)),
+    failedCases: results.filter((r) => r.failures.length).length,
     count: n,
-    answerSpanRecall: mean(results.map((r) => r.answerSpanRecall)),
-    hitAnyAt1: mean(results.map((r) => r.hitAnyAt1)),
-    hitAnyAt3: mean(results.map((r) => r.hitAnyAt3)),
-    hitAnyAt5: mean(results.map((r) => r.hitAnyAt5)),
-    hitAnyAt10: mean(results.map((r) => r.hitAnyAt10)),
-    mrr: mean(results.map((r) => r.reciprocalRank)),
+    answerSpanRecall: spanMean(spanResults.map((r) => r.answerSpanRecall)),
+    hitAnyAt1: results[0].hitAnyAt1 === null ? null : spanMean(spanResults.map((r) => r.hitAnyAt1!)),
+    hitAnyAt3: results[0].hitAnyAt3 === null ? null : spanMean(spanResults.map((r) => r.hitAnyAt3!)),
+    hitAnyAt5: results[0].hitAnyAt5 === null ? null : spanMean(spanResults.map((r) => r.hitAnyAt5!)),
+    hitAnyAt10: results[0].hitAnyAt10 === null ? null : spanMean(spanResults.map((r) => r.hitAnyAt10!)),
+    mrr: spanMean(spanResults.map((r) => r.reciprocalRank)),
     contextEfficiency: hitResults.length ? mean(hitResults.map((r) => r.contextEfficiency)) : 0,
-    fileRecallAt5: mean(results.map((r) => r.fileRecallAt5)),
-    fileRecallAt10: mean(results.map((r) => r.fileRecallAt10)),
+    fileRecallAt5: results[0].fileRecallAt5 === null ? null : mean(results.map((r) => r.fileRecallAt5!)),
+    fileRecallAt10: results[0].fileRecallAt10 === null ? null : mean(results.map((r) => r.fileRecallAt10!)),
   };
 }
 
-function fmt(n: number, dp: number = 3): string {
-  return n.toFixed(dp);
+function fmt(n: number | null, dp: number = 3): string {
+  return n === null ? 'N/A' : n.toFixed(dp);
 }
 
 function printAggregate(label: string, m: AggregateMetrics): void {
   const tag = `${label} (n=${m.count})`.padEnd(20);
+  console.log(
+    `Source hit rate=${fmt(m.sourceHitRate)}  failed=${m.failedCases}  avg latency=${fmt(m.averageLatencyMs, 1)}ms  avg payload=${fmt(m.averagePayloadBytes, 0)}B`,
+  );
   console.log(
     `${tag}  spanRecall=${fmt(m.answerSpanRecall)}  hit@1=${fmt(m.hitAnyAt1)}  hit@3=${fmt(m.hitAnyAt3)}  hit@5=${fmt(m.hitAnyAt5)}  hit@10=${fmt(m.hitAnyAt10)}  MRR=${fmt(m.mrr)}  ctxEff=${fmt(m.contextEfficiency, 2)}  fileR@5=${fmt(m.fileRecallAt5)}`,
   );
@@ -279,7 +230,7 @@ function printPerQueryTable(results: PerQueryResult[]): void {
     const spans = `${r.spansCovered.length}/${r.answerSpans.length}`;
     const matched = r.retrievedSources[0] ? r.retrievedSources.slice(0, 2).join(', ') : '(empty)';
     console.log(
-      `${r.id.padEnd(4)} | ${r.difficulty.padEnd(6)} | ${fhr} | ${spans.padEnd(6)} | ${String(r.hitAnyAt5).padEnd(5)} | ${String(r.uniqueFiles).padEnd(6)} | ${matched}`,
+      `${r.id.padEnd(4)} | ${r.difficulty.padEnd(6)} | ${fhr} | ${spans.padEnd(6)} | ${fmt(r.hitAnyAt5, 0).padEnd(5)} | ${String(r.uniqueFiles).padEnd(6)} | ${matched}`,
     );
   }
   console.log(sep);
@@ -289,20 +240,31 @@ function printPerQueryTable(results: PerQueryResult[]): void {
 
 async function runEval(): Promise<void> {
   const datasetPath = resolveDatasetPath();
-  const dataset: EvalDataset = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
+  if (!Number.isSafeInteger(TOP_K) || TOP_K < 1) throw new Error('--top-k must be a positive integer');
+  if (!/^[a-zA-Z0-9_-]+$/.test(LABEL))
+    throw new Error('--label must contain only letters, digits, underscores or hyphens');
+  const dataset = evalDatasetSchema.parse(JSON.parse(fs.readFileSync(datasetPath, 'utf-8')));
 
-  console.log(`\n=== Appium RAG eval (answer-grounded) ===`);
+  console.log(`\n=== Appium retrieval eval (Level 2) ===`);
   console.log(`Dataset: ${datasetPath}`);
   console.log(`Queries: ${dataset.queries.length}   topK: ${TOP_K}   label: ${LABEL}\n`);
 
   const perQuery: PerQueryResult[] = [];
 
   for (const q of dataset.queries) {
-    const docs = await queryVectorStore(q.query, TOP_K);
+    const start = performance.now();
+    const docs = await queryVectorStore(q.query, TOP_K).catch((error: unknown) => {
+      throw new Error(`Retrieval failed for ${q.id}: ${q.query}`, {cause: error});
+    });
+    const latencyMs = performance.now() - start;
+    const payloadBytes = Buffer.byteLength(JSON.stringify(docs), 'utf8');
     const chunks: RetrievedChunk[] = docs.map((d, i) => ({
       rank: i + 1,
       text: d.pageContent,
-      source: (d.metadata?.relativePath as string | undefined) ?? (d.metadata?.filename as string | undefined),
+      source:
+        (d.metadata?.relativePath as string | undefined) ??
+        (d.metadata?.filename as string | undefined) ??
+        (d.metadata?.source as string | undefined),
       charCount: d.pageContent.length,
     }));
 
@@ -319,11 +281,20 @@ async function runEval(): Promise<void> {
     const contextEfficiency = firstHitRank !== null && topKChars > 0 ? (1000 * spansCovered.length) / topKChars : 0;
 
     const fileMatched = (k: number): 0 | 1 => {
-      const top = retrievedSources.slice(0, k);
-      return top.some((rs) => q.expectedSources.some((es) => endsWithExpected(rs, es))) ? 1 : 0;
+      return chunks.some(
+        (c) => c.rank <= k && c.source && q.expectedSources.some((es) => endsWithExpected(c.source!, es)),
+      )
+        ? 1
+        : 0;
     };
 
+    const evidence = checkEvidence(q, chunks);
     perQuery.push({
+      ...evidence,
+      question: q.question,
+      requiredFacts: q.requiredFacts,
+      latencyMs,
+      payloadBytes,
       id: q.id,
       query: q.query,
       difficulty: q.difficulty,
@@ -339,20 +310,20 @@ async function runEval(): Promise<void> {
       spansCovered,
       spansMissing,
       answerSpanRecall,
-      hitAnyAt1: hitAnyAt(1),
-      hitAnyAt3: hitAnyAt(3),
-      hitAnyAt5: hitAnyAt(5),
-      hitAnyAt10: hitAnyAt(10),
+      hitAnyAt1: TOP_K >= 1 ? hitAnyAt(1) : null,
+      hitAnyAt3: TOP_K >= 3 ? hitAnyAt(3) : null,
+      hitAnyAt5: TOP_K >= 5 ? hitAnyAt(5) : null,
+      hitAnyAt10: TOP_K >= 10 ? hitAnyAt(10) : null,
       reciprocalRank,
       contextEfficiency,
-      fileRecallAt5: fileMatched(5),
-      fileRecallAt10: fileMatched(10),
+      fileRecallAt5: TOP_K >= 5 ? fileMatched(5) : null,
+      fileRecallAt10: TOP_K >= 10 ? fileMatched(10) : null,
     });
 
     if (!QUIET) {
-      const status = hitAnyAt(5) ? 'OK' : 'MISS';
+      const status = evidence.failures.length ? 'FAIL' : 'PASS';
       console.log(
-        `${status.padEnd(4)} ${q.id}  spans=${spansCovered.length}/${q.answerSpans.length}  fhr=${firstHitRank ?? '-'}`,
+        `${status.padEnd(4)} ${q.id}  spans=${spansCovered.length}/${q.answerSpans.length}  fhr=${firstHitRank ?? '-'} source=${evidence.sourceHit ? 'PASS' : 'FAIL'} sourceRank=${evidence.sourceFirstHitRank ?? '-'} facts=${q.requiredFacts.length ? (evidence.requiredFactsMissing.length ? 'FAIL' : 'PASS') : 'N/A'} latency=${fmt(latencyMs, 1)}ms chunks=${chunks.length} payload=${payloadBytes}B`,
       );
     }
   }
@@ -361,6 +332,11 @@ async function runEval(): Promise<void> {
     printPerQueryTable(perQuery);
   }
 
+  for (const r of perQuery.filter((r) => r.failures.length)) {
+    console.log(
+      `FAIL ${r.id} (${r.question}):\n  ${r.failures.join('\n  ')}\n  Retrieved: ${r.retrievedSources.join(', ') || '(empty)'}`,
+    );
+  }
   const overall = aggregate(perQuery);
   const byDifficulty: Record<string, AggregateMetrics> = {};
   for (const d of ['easy', 'medium', 'vague'] as const) {
@@ -373,6 +349,7 @@ async function runEval(): Promise<void> {
     printAggregate(d, byDifficulty[d]);
   }
   console.log('');
+  if (flagSet.has('--strict') && overall.failedCases) process.exitCode = 1;
 
   if (!NO_SAVE) {
     const run: EvalRun = {
@@ -380,6 +357,7 @@ async function runEval(): Promise<void> {
       label: LABEL,
       datasetVersion: dataset.version,
       topK: TOP_K,
+      embeddingModel: process.env.SENTENCE_TRANSFORMERS_MODEL || 'Xenova/bge-small-en-v1.5',
       overall,
       byDifficulty,
       perQuery,
@@ -402,5 +380,5 @@ try {
   await runEval();
 } catch (err) {
   console.error('Eval failed:', err);
-  process.exit(1);
+  process.exitCode = 1;
 }
