@@ -1,9 +1,55 @@
 /**
- * Level 2 retrieval evaluation; see evals/DESIGN.md for metric definitions.
- * Uses the production retriever, never query generation or answer synthesis.
- * Usage: npm run eval-docs -- [--top-k=10] [--label=NAME] [--quiet] [--no-save] [--strict]
- * --strict exits nonzero on source, evidence-span, or required-fact failures.
- * Default mode preserves the existing observational baseline behavior.
+ * Level 2 retrieval evaluation for the Appium documentation tool.
+ *
+ * Runs fixed golden queries through the production queryVectorStore retriever:
+ * does the retrieved context contain the expected documentation and evidence?
+ * No query-generation model, answer synthesis, or LLM judge is involved. Local
+ * embeddings require no API credential, but may download weights on first use.
+ *
+ * What we measure:
+ *
+ *   1. answerSpanRecall / hitAnyAt{1,3,5,10} / MRR
+ *      answerSpanRecall is the fraction of declared answerSpans found in top-K.
+ *      A hit requires ANY span; MRR averages the reciprocal rank of the first
+ *      chunk containing a span (zero for a miss). Aggregate span metrics include
+ *      only cases declaring spans. These measure evidence presence, not final
+ *      answer correctness; broad markers can match unrelated documentation.
+ *
+ *   2. sourceHit / sourceHitRate / sourceFirstHitRank
+ *      Does ANY acceptable expected source appear in top-K, and at what rank?
+ *      fileRecallAt5/10 retain the legacy names for binary any-source hits at
+ *      those cutoffs; they are not multi-document recall. Missing source metadata
+ *      does not change chunk ranks. Cutoffs above requested K are null (N/A).
+ *
+ *   3. requiredFactsPresent / requiredFactsMissing
+ *      Optional ALL-of fact markers: each must occur in a chunk from an expected
+ *      source. This distinguishes source-scoped evidence from legacy span hits.
+ *
+ *   4. contextEfficiency
+ *      1000 * spansCovered / topKChars, averaged over cases with a span hit in
+ *      top-K. Evidence density is diagnostic, not a composite quality score.
+ *
+ *   5. latencyMs / topKChunks / topKChars / uniqueFiles / payloadBytes
+ *      Retrieval time includes initialization for the first query. Payload bytes
+ *      count UTF-8 serialized returned documents including metadata, not tokens
+ *      or MCP wire bytes. Mean latency and payload size are also reported.
+ *
+ * Text matching lowercases and collapses whitespace, then checks substrings
+ * within individual chunks, never across chunk boundaries. Source paths match
+ * exactly or by suffix at a path boundary. A case fails if no expected source
+ * appears, no declared answerSpan appears, or any requiredFact is missing.
+ *
+ * Usage (after npm run build):
+ *   npm run eval-docs -- [--top-k=10] [--label=NAME] [--quiet] [--no-save] [--strict]
+ *
+ *   --top-k=N   positive integer context budget (default 10)
+ *   --label=N   saved run label (letters, digits, underscores, hyphens)
+ *   --quiet     suppress per-case progress/table; retain failures and summaries
+ *   --no-save   skip JSON reports in src/scripts/eval-results/
+ *   --strict    exit 1 on quality failures after reporting; default is report-only
+ *
+ * Execution, dataset, and argument errors always exit 1. See evals/DESIGN.md for
+ * dataset maintenance, repository ownership, CI strategy, and future layers.
  */
 
 import * as fs from 'node:fs';
@@ -36,8 +82,8 @@ interface PerQueryResult extends ReturnType<typeof checkEvidence> {
   topKChars: number;
   uniqueFiles: number;
 
-  // Per-rank tracking: which ranks contain at least one answerSpan, and which
-  // chunk first carried each individual span. Lets us derive recall@K cheaply.
+  // Ranks containing at least one answerSpan, the first such rank, and the
+  // covered/missing spans. Lets us derive hit@K cheaply.
   hitRanks: number[];
   firstHitRank: number | null;
   spansCovered: string[];
