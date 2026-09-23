@@ -153,6 +153,19 @@ assets are pinned/cached, and measured runtime is reasonable. Record repository
 revision, dataset version, model (also in the JSON), corpus/cache identity, and top-k
 when comparing runs. No new required CI job is introduced here.
 
+Saved reports include `datasetSha256` and `corpusSha256`: SHA-256 of the raw bytes
+of the dataset and built `dist/uploads/documents.json` actually used by the run.
+These distinguish same-version edits and stale build assets; even whitespace
+changes alter the hashes. Inputs must remain unchanged during a run. Hashes do
+not pin model weights or identify the runtime, so equal hashes alone are not a
+complete reproducibility guarantee. Compare model, top-k, and code revision too.
+
+Level 1 CLI regression tests run the compiled evaluator in an isolated temporary
+package with a fixed retriever fixture. They cover strict/report-only exit codes,
+failure output, report persistence, `--no-save`, input hashes, invalid arguments,
+retrieval errors, and unmeasured cutoffs. They do not download a model or measure
+retrieval quality; `npm run eval-docs` still exercises the production retriever.
+
 Keep future model-generated queries, answer/groundedness checks, model matrices,
 cost comparisons, and real-client runs scheduled or non-blocking initially.
 
@@ -200,3 +213,7 @@ model and task, not one universal threshold. Level 2 does not invent token accou
 The next increment is to review current retrieval misses and replace broad evidence
 markers with distinctive source-scoped facts, then establish a reproducible CI baseline
 before adding model-driven evaluation.
+
+See [the baseline review](BASELINE.md) for the current seven misses, identified
+input hashes, observed source/evidence ranks, and follow-up investigations. This
+review does not exempt failures or lower the strict checks.

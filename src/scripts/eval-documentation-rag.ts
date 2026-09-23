@@ -34,6 +34,10 @@
  *      count UTF-8 serialized returned documents including metadata, not tokens
  *      or MCP wire bytes. Mean latency and payload size are also reported.
  *
+ * Saved reports include datasetSha256 and corpusSha256 for the exact input file
+ * bytes. Compare these alongside datasetVersion, embeddingModel, and topK; the
+ * hashes identify inputs but do not pin downloaded model weights or the runtime.
+ *
  * Text matching lowercases and collapses whitespace, then checks substrings
  * within individual chunks, never across chunk boundaries. Source paths match
  * exactly or by suffix at a path boundary. A case fails if no expected source
@@ -52,6 +56,7 @@
  * dataset maintenance, repository ownership, CI strategy, and future layers.
  */
 
+import {createHash} from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -125,6 +130,8 @@ interface EvalRun {
   timestamp: string;
   label: string;
   datasetVersion: number;
+  datasetSha256: string;
+  corpusSha256: string;
   topK: number;
   embeddingModel: string;
   overall: AggregateMetrics;
@@ -289,7 +296,13 @@ async function runEval(): Promise<void> {
   if (!Number.isSafeInteger(TOP_K) || TOP_K < 1) throw new Error('--top-k must be a positive integer');
   if (!/^[a-zA-Z0-9_-]+$/.test(LABEL))
     throw new Error('--label must contain only letters, digits, underscores or hyphens');
-  const dataset = evalDatasetSchema.parse(JSON.parse(fs.readFileSync(datasetPath, 'utf-8')));
+  const datasetBytes = fs.readFileSync(datasetPath);
+  const dataset = evalDatasetSchema.parse(JSON.parse(datasetBytes.toString('utf-8')));
+  // Use the built corpus beside the production retriever, not the source copy.
+  // Read before retrieval; concurrent edits to input assets are not supported.
+  const corpusBytes = fs.readFileSync(path.resolve(__dirname, '../uploads/documents.json'));
+  const datasetSha256 = createHash('sha256').update(datasetBytes).digest('hex');
+  const corpusSha256 = createHash('sha256').update(corpusBytes).digest('hex');
 
   console.log(`\n=== Appium retrieval eval (Level 2) ===`);
   console.log(`Dataset: ${datasetPath}`);
@@ -402,6 +415,8 @@ async function runEval(): Promise<void> {
       timestamp: new Date().toISOString(),
       label: LABEL,
       datasetVersion: dataset.version,
+      datasetSha256,
+      corpusSha256,
       topK: TOP_K,
       embeddingModel: process.env.SENTENCE_TRANSFORMERS_MODEL || 'Xenova/bge-small-en-v1.5',
       overall,
