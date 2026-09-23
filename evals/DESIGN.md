@@ -151,7 +151,7 @@ Required CI should continue running unit tests. A required Level 2 `--strict` jo
 is appropriate only once the golden expectations pass, corpus and embedding model
 assets are pinned/cached, and measured runtime is reasonable. Record repository
 revision, dataset version, model (also in the JSON), corpus/cache identity, and top-k
-when comparing runs. No new required CI job is introduced here.
+when comparing runs. Quality misses are not a required CI gate yet.
 
 Saved reports include `datasetSha256` and `corpusSha256`: SHA-256 of the raw bytes
 of the dataset and built `dist/uploads/documents.json` actually used by the run.
@@ -217,3 +217,36 @@ before adding model-driven evaluation.
 See [the baseline review](BASELINE.md) for the current seven misses, identified
 input hashes, observed source/evidence ranks, and follow-up investigations. This
 review does not exempt failures or lower the strict checks.
+
+
+## Dependency-update CI coverage
+
+`.github/workflows/ci.yml` runs on every PR targeting `main` (including Dependabot
+npm updates), pushes to `main`, and manual dispatch. The existing Node LTS matrix
+runs `npm test`, including the model-free CLI regression tests. A separate Node 24
+retrieval job evaluates two corpora:
+
+- `packaged`: the checked-in `src/uploads/documents.json` copied by the build.
+  This exercises the shipped index with the PR's installed retrieval dependencies.
+- `reindexed`: documentation rebuilt with the production indexer from the submodule
+  commits checked out for that PR. This also exercises splitting and embedding
+  changes and documentation submodule updates. Missing documentation or partially
+  indexed files fail the job. The source index is not overwritten or committed.
+
+Both run `npm ci` against the PR's lockfile. Only local model weights are cached,
+keyed by model, OS/architecture, and lockfile; document vectors are recomputed so
+an old embedding cache cannot hide a dependency regression. The job needs network
+access on a model-cache miss, but no LLM/API credentials. Submodules are pinned by
+the parent commit; CI never runs `git submodule update --remote`.
+
+Each variant uploads JSON reports, execution/indexing logs, and environment details
+(commit, submodule revisions, Node/npm versions, lockfile hash) for 14 days. Its job
+summary shows quality metrics and failed case IDs. Review both artifacts on a
+dependency-update PR; the reindexed corpus may differ from the packaged baseline.
+Use the input hashes to determine which comparisons are meaningful.
+
+Execution errors fail CI; quality misses remain observational through the default
+`eval-docs` exit behavior. There is no blanket `continue-on-error`, no accepted-failure
+allowlist, and no LLM-dependent job. Automatic quality regression gating is still a
+future step after the baseline is reviewed. Branch protection must be configured
+separately if these job statuses should be required for merging.

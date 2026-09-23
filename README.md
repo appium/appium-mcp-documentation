@@ -142,3 +142,10 @@ reports go to `src/scripts/eval-results/`; the default command reports quality
 misses without failing the process. See [the evaluation design](evals/DESIGN.md)
 for metrics, dataset maintenance, CI prerequisites, and future query-generation,
 answer, and real-client evaluation layers.
+
+CI runs implementation tests and retrieval evaluation on PRs to `main`, including
+Dependabot updates. Retrieval runs against both the packaged index and an index
+rebuilt from the PR's documentation submodule commits. Results and failures appear
+in the job summary and downloadable artifacts. Execution/indexing errors fail CI;
+retrieval quality misses are currently observational. See the
+[CI design](evals/DESIGN.md#dependency-update-ci-coverage) for details.
