@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {afterEach, describe, test} from 'node:test';
 
+import {splitMarkdownByHeaders} from '../markdown-header-splitter.js';
 import {getMarkdownFilesInDirectory} from '../simple-pdf-indexer.js';
 
 const tempDirs: string[] = [];
@@ -41,5 +42,43 @@ void describe('getMarkdownFilesInDirectory', () => {
     const relativeFiles = markdownFiles.map((file) => path.relative(root, file));
 
     assert.deepEqual(relativeFiles.sort(), ['README.md', 'docs/guide.md']);
+  });
+});
+
+void describe('splitMarkdownByHeaders', () => {
+  void test('reserves breadcrumb length when recursive-splitting oversized sections and handles nested fences', async () => {
+    const markdown = [
+      '# Page Title',
+      '',
+      '## Code Example',
+      '',
+      '````markdown',
+      '```bash',
+      '# Not a heading inside nested fence',
+      '```',
+      '````',
+      '',
+      '## Large Section',
+      '',
+      'Paragraph one with enough words to force a recursive split.',
+      '',
+      'Paragraph two with enough words to force a recursive split.',
+      '',
+      'Paragraph three with enough words to force a recursive split.',
+    ].join('\r\n');
+
+    const chunks = await splitMarkdownByHeaders(markdown, {
+      chunkSize: 120,
+      chunkOverlap: 10,
+    });
+
+    assert.equal(chunks[0]?.metadata.sectionCount, 2);
+    assert.match(
+      chunks[0]?.pageContent ?? '',
+      /# Page Title > ## Code Example[\s\S]*# Not a heading inside nested fence/,
+    );
+    for (const chunk of chunks) {
+      assert.ok(chunk.pageContent.length <= 120, `Expected chunk length <= 120, got ${chunk.pageContent.length}`);
+    }
   });
 });

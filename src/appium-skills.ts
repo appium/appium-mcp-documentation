@@ -191,7 +191,8 @@ function getPromptTemplate(agentsMarkdown: string, heading: string | null): stri
     return null;
   }
 
-  const section = agentsMarkdown.split(`### Template: ${heading}\n`)[1];
+  const normalized = agentsMarkdown.replace(/\r\n/g, '\n');
+  const section = normalized.split(`### Template: ${heading}\n`)[1];
   if (!section) {
     return null;
   }

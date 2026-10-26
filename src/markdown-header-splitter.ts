@@ -33,7 +33,8 @@ interface Section {
 }
 
 const HEADER_RE = /^(#{1,6})\s+(.+?)\s*$/;
-const FENCE_RE = /^\s{0,3}(```|~~~)/;
+const OPEN_FENCE_RE = /^\s{0,3}(`{3,}|~{3,})/;
+const CLOSE_FENCE_RE = /^\s{0,3}(`{3,}|~{3,})\s*$/;
 
 /**
  * Split a single Markdown document into chunks using header-aware hybrid logic.
@@ -45,14 +46,6 @@ export async function splitMarkdownByHeaders(
 ): Promise<Document[]> {
   const {chunkSize, chunkOverlap} = options;
   const sections = parseSections(markdown);
-
-  // Fallback splitter for sections that exceed chunkSize on their own.
-  // Reserve some room for the breadcrumb so the final chunk text still fits.
-  const recursive = new RecursiveCharacterTextSplitter({
-    chunkSize,
-    chunkOverlap,
-    keepSeparator: true,
-  });
 
   const chunks: Document[] = [];
   // `buffer` holds rendered section texts (each with its own breadcrumb) that
@@ -85,8 +78,17 @@ export async function splitMarkdownByHeaders(
       // Section is too big to live in any single chunk: flush whatever we had
       // buffered, then recursive-split this section's body, prepending the
       // breadcrumb to each sub-chunk so context isn't lost.
+      // Reserve room for the breadcrumb so the final chunk text still fits.
       flushBuffer();
       const bc = breadcrumbFor(section.headerStack);
+      const prefixLength = bc ? bc.length + 2 : 0;
+      const bodyChunkSize = Math.max(1, chunkSize - prefixLength);
+      const bodyChunkOverlap = Math.min(chunkOverlap, Math.max(0, bodyChunkSize - 1));
+      const recursive = new RecursiveCharacterTextSplitter({
+        chunkSize: bodyChunkSize,
+        chunkOverlap: bodyChunkOverlap,
+        keepSeparator: true,
+      });
       const subTexts = await recursive.splitText(section.body || '');
       for (const sub of subTexts) {
         const text = bc ? `${bc}\n\n${sub}` : sub;
@@ -126,9 +128,9 @@ export async function splitMarkdownByHeaders(
  *   the file's eventual root headerStack (still empty until we see an h1).
  */
 function parseSections(markdown: string): Section[] {
-  const lines = markdown.split('\n');
+  const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const sections: Section[] = [];
-  let inFence = false;
+  let fenceMarker: string | null = null;
   let currentBody: string[] = [];
   // headerStack carries the live ancestor chain — when we see h(n), we pop
   // everything at level >= n then push the new header.
@@ -146,12 +148,17 @@ function parseSections(markdown: string): Section[] {
   };
 
   for (const line of lines) {
-    if (FENCE_RE.test(line)) {
-      inFence = !inFence;
+    if (fenceMarker) {
+      const closeMatch = line.match(CLOSE_FENCE_RE);
+      if (closeMatch && closeMatch[1][0] === fenceMarker[0] && closeMatch[1].length >= fenceMarker.length) {
+        fenceMarker = null;
+      }
       currentBody.push(line);
       continue;
     }
-    if (inFence) {
+    const openMatch = line.match(OPEN_FENCE_RE);
+    if (openMatch) {
+      fenceMarker = openMatch[1];
       currentBody.push(line);
       continue;
     }
