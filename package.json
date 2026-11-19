@@ -57,7 +57,7 @@
     "update-submodules": "./scripts/update-submodules.sh"
   },
   "dependencies": {
-    "@appium/support": "^7.2.7",
+    "@appium/support": "^8.0.0",
     "@langchain/classic": "^1.0.10",
     "@langchain/core": "^1.1.17",
     "@langchain/textsplitters": "^1.0.1",
